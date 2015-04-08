@@ -6,7 +6,7 @@ import java.lang.reflect.*;
 
 
 public class RandomBot extends TetrisBot {
-    
+    System.out.println("JUNKITY JUNK");
     // return the left-most column of where you want to play
     public TetrisMove chooseMove(TetrisBoard board, TetrisPiece current_piece, TetrisPiece next_piece) {
         Random r = new Random();
