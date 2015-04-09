@@ -25,7 +25,7 @@ public class LinearRegression {
 	return total;
     }
     //NOT DONE
-    /*public double slopeCalc(double[] data, int index) {
+    public double slopeCalc(double[] data, int index) {
 	//we need some value for the next move so we can aim for it
 	double returnable = alpha*(predictedValue(data) - "value of move")*data[index-1];
 	return returnable;
@@ -34,26 +34,58 @@ public class LinearRegression {
     public double interceptCalc(double[] data) {
 	double returnable = alpha*(predictedValue(data) - "value of move");
 	return returnable;
-	}*/
+    }
 
     public double getReward() {
 	return 0.;
     }
-
-    public double getBestQ() {
-	for(move m : moves[state[state.length - 1]]) {
-	    //copy state and do move
-	    
-	}
-	return 0.;
+    
+    public double getValue(TetrisBoard b) {
+        //evaluate the value of a board state
     }
 
-    public void learn(double[] state) {
+    public double getBestQ(TetrisBoard t, TetrisPiece p) {
+        ArrayList<TetrisBoard> futureBoards = getFutureBoards(t, p);
+        double highestQ = 0;
+	for(TetrisBoard b : futureBoards) {
+            if (getValue(b) > highestQ) {
+                highestQ = getValue(b);
+            }
+	    
+	}
+        return highestQ;
+    }
+    public ArrayList<TetrisBoard> getFutureBoards(TetrisBoard t, TetrisPiece _p) {
+        ArrayList<TetrisBoard> futureBoards = new ArrayList<TetrisBoard>();
+        for (int i=0;i<4;i++) {
+            for (int j=0;j<t.width;j++) {
+               TetrisPiece p = _p.rotatePiece(i);
+               TetrisMove m = new TetrisMove(p, j);
+               TetrisBoard b = deepCopy(t);
+               b.addPiece(m);
+               futureBoards.add(b);
+            }
+        }
+        return futureBoards;
+            
+    }
+
+    public void learn() {
 	//do move that was previously chosen
 	double reward = getReward();
 	double gamma = reward + dFactor * getBestQ(state) - predictedValue(state);
-	for(int i=1;i<theta.length;i++) {
-	    theta[i] += alpha * gamma * state[i];
-	}
+	
+    }
+    public TetrisBoard deepCopy(TetrisBoard _t) {
+        TetrisBoard t = new TetrisBoard(_t.width, _t.height, false);
+        t.blocksPlaced = _t.blocksPlaced;
+        for (int r=0;r<_t.board.length;r++) {
+            for (int c=0;c<_t.board[0].length;c++) {
+                t.board[r][c] = _t.board[r][c];
+            }
+        }
+        t.linesEliminated = _t.linesEliminated;
+        //not messing with _t.tbv
+        return t;
     }
 }
