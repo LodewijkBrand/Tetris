@@ -1,11 +1,8 @@
-<<<<<<< HEAD
 import java.util.Arrays;
-=======
 import java.util.ArrayList;
->>>>>>> d3e278633bdba61a717e7d747a8ed055907ad445
 
 public class NNBot {
-    NerualNetwork myNN;
+    NeuralNetwork myNN;
     final double GAMMA = .5;
     final double LEARNING_RATE = .7;
 
@@ -55,9 +52,9 @@ public class NNBot {
 	return lowest;
     }
 
-    // public int[][] deepCopy() {
-	
-    // }
+    public TetrisBoard deepCopy(TetrisBoard board) {
+	return null;
+    }
 
     public static void main(String[] args) {
 	TetrisBoard board = new TetrisBoard(10, 20, false);
@@ -67,9 +64,21 @@ public class NNBot {
 
     //LOU WORK BELOW HERE!!!
 
-    public TetrisMove chooseMove(TestrisBoard board, TetrisPiece current_piece, TetrisPiece next_piece){
-	Input features = new Input(contour(board));
-	Output out = new Output(null);
-	
+    public TetrisMove chooseMove(TetrisBoard board, TetrisPiece current_piece, TetrisPiece next_piece){
+	for(TetrisMove mov : getLegalMoves(board)){
+	    TetrisBoard currentBoard = deepCopy(board);
+	    double reward = getReward(currentBoard, mov);
+
+	}
+	return null;
+    }
+
+    public ArrayList<TetrisMove> getLegalMoves(TetrisBoard board){
+	return null;
+    }
+
+    public double getReward(TetrisBoard board, TetrisMove move){
+	double reward = 0.0;
+	return reward;
     }
 }
