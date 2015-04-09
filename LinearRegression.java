@@ -4,7 +4,9 @@ public class LinearRegression {
 
     double[] theta;
     double alpha = 0.05;
+    double dFactor = 0.4;
     Random r;
+    
     
     //before I did batch learning, but this will be iterative learning
     public LinearRegression(int vector_size) {
@@ -15,7 +17,7 @@ public class LinearRegression {
 	}
     }
 
-    public double predictedValue(double[] data) {
+    public double predictedValue(double[] state) {
 	double total = theta[0];
 	for(int i=1;i<data.length;i++) {
 	    total = theta[1]*data[i-1];
@@ -32,5 +34,23 @@ public class LinearRegression {
     public double interceptCalc(double[] data) {
 	double returnable = alpha*(predictedValue(data) - "value of move");
 	return returnable;
+    }
+
+    public double getReward() {
+	return 0.;
+    }
+
+    public getBestQ() {
+	for(move m : moves[state[state.length - 1]]) {
+	    //copy state and do move
+	    
+	}
+    }
+
+    public void learn() {
+	//do move that was previously chosen
+	double reward = getReward();
+	double gamma = reward + dFactor * getBestQ(state) - predictedValue(state);
+	
     }
 }
