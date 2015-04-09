@@ -1,3 +1,5 @@
+import java.util.Arrays;
+
 public class NNBot {
     
     //Returns an integer array 
@@ -49,6 +51,7 @@ public class NNBot {
     public static void main(String[] args) {
 	TetrisBoard board = new TetrisBoard(10, 20, false);
 	System.out.println(board);
+	System.out.println(Arrays.toString(contour(board)));
     }
 
     //LOU WORK BELOW HERE!!!
