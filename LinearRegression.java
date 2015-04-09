@@ -25,7 +25,7 @@ public class LinearRegression {
 	return total;
     }
     //NOT DONE
-    public double slopeCalc(double[] data, int index) {
+    /*public double slopeCalc(double[] data, int index) {
 	//we need some value for the next move so we can aim for it
 	double returnable = alpha*(predictedValue(data) - "value of move")*data[index-1];
 	return returnable;
@@ -34,23 +34,26 @@ public class LinearRegression {
     public double interceptCalc(double[] data) {
 	double returnable = alpha*(predictedValue(data) - "value of move");
 	return returnable;
-    }
+	}*/
 
     public double getReward() {
 	return 0.;
     }
 
-    public getBestQ() {
+    public double getBestQ() {
 	for(move m : moves[state[state.length - 1]]) {
 	    //copy state and do move
 	    
 	}
+	return 0.;
     }
 
-    public void learn() {
+    public void learn(double[] state) {
 	//do move that was previously chosen
 	double reward = getReward();
 	double gamma = reward + dFactor * getBestQ(state) - predictedValue(state);
-	
+	for(int i=1;i<theta.length;i++) {
+	    theta[i] += alpha * gamma * state[i];
+	}
     }
 }
