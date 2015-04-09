@@ -1,7 +1,18 @@
+<<<<<<< HEAD
 import java.util.Arrays;
+=======
+import java.util.ArrayList;
+>>>>>>> d3e278633bdba61a717e7d747a8ed055907ad445
 
 public class NNBot {
-    
+    NerualNetwork myNN;
+    final double GAMMA = .5;
+    final double LEARNING_RATE = .7;
+
+    public NNBot(){
+	myNN = new NeuralNetwork();
+    }
+
     //Returns an integer array 
     public static int[] contour(TetrisBoard tBoard){
 	int[][] board = tBoard.board;
@@ -55,5 +66,10 @@ public class NNBot {
     }
 
     //LOU WORK BELOW HERE!!!
-    
+
+    public TetrisMove chooseMove(TestrisBoard board, TetrisPiece current_piece, TetrisPiece next_piece){
+	Input features = new Input(contour(board));
+	Output out = new Output(null);
+	
+    }
 }
