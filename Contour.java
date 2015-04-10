@@ -5,8 +5,8 @@ public class Contour{
     double[] contour;
 
     public Contour(int _width){
-	width = _width;
-	contour = new double[width];
+    	width = _width;
+    	contour = new double[width];
     }
 
     /*@param: takes in a tetris board
@@ -15,24 +15,24 @@ public class Contour{
 
     public static Contour readContour(TetrisBoard t_board){
 
-	Contour b_contour = new Contour(t_board.width);
-	double firstBlock = 0;
-	//find the first block in column 0 
-	//note that a Tetrisboard.board is stored as [row][column]
-	for(int j=0; j<t_board.height;j++){
-	    if(t_board.board[j][0] !=0){
-		firstBlock=j;
-		break;
-	    }
-	}	
+    	Contour b_contour = new Contour(t_board.width);
+    	double firstBlock = 0;
+    	//find the first block in column 0 
+    	//note that a Tetrisboard.board is stored as [row][column]
+    	for(int j=0; j<t_board.height;j++){
+    	    if(t_board.board[j][0] !=0){
+    		firstBlock=j;
+    		break;
+    	    }
+    }	
 	//represent every other block relative to the starting block
 
 	for(int i=0; i<t_board.width; i++){
 	    for(int j=0; j<t_board.height; j++){
 		if (t_board.board[j][i] !=0){
-		    System.out.println("j: " + j);
+		    // System.out.println("j: " + j);
 		    b_contour.contour[i]=j-firstBlock;
-		    System.out.println("contour[i]: " + b_contour.contour[i]);
+		    // System.out.println("contour[i]: " + b_contour.contour[i]);
 		    break;
 		}
 	    }

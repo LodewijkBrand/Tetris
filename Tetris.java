@@ -72,27 +72,12 @@ class TetrisMove {
     
     public TetrisPiece piece;
     public int boardCol;
-    public Integer code;
     
     public TetrisMove(TetrisPiece _p, int _boardCol) {
         piece = _p;
         boardCol = _boardCol;
-        code = new Integer(piece.hashCode() * 100 + boardCol).hashCode();
     }
-
-    public int hashCode(){
-        return new Integer(code).hashCode();
-    }
-
-    public void changeMove(TetrisPiece _p, int _boardCol) {
-        piece = _p;
-        boardCol = _boardCol;
-        code = new Integer(piece.hashCode() * 100 + boardCol).hashCode();
-    }
-
-    public String toString(){
-        return piece.toString() + boardCol;
-    }
+    
 }
 
 
@@ -102,18 +87,13 @@ class TetrisPiece {
     
     public int width;
     public int height;
-    public int[][] blocks;
-    public int code;
     
-    public TetrisPiece(int[][] pieceBlocks, int _code) {
+    public int[][] blocks;
+    
+    public TetrisPiece(int[][] pieceBlocks) {
         height = pieceBlocks.length;
         width = pieceBlocks[0].length;
         blocks = pieceBlocks;
-        code = _code;
-    }
-
-    public int hashCode(){
-        return new Integer(code).hashCode();
     }
     
     
@@ -123,7 +103,7 @@ class TetrisPiece {
         newBlocks[0][1] = 1;
         newBlocks[1][0] = 1;
         newBlocks[1][1] = 1;
-        return new TetrisPiece(newBlocks, 0);
+        return new TetrisPiece(newBlocks);
     }
     
     public static TetrisPiece buildSPiece() {
@@ -134,7 +114,7 @@ class TetrisPiece {
         newBlocks[1][0] = 1;
         newBlocks[1][1] = 1;
         newBlocks[1][2] = 0;
-        return new TetrisPiece(newBlocks, 1);
+        return new TetrisPiece(newBlocks);
     }
     
     public static TetrisPiece buildZPiece() {
@@ -145,7 +125,7 @@ class TetrisPiece {
         newBlocks[1][0] = 0;
         newBlocks[1][1] = 1;
         newBlocks[1][2] = 1;
-        return new TetrisPiece(newBlocks, 2);
+        return new TetrisPiece(newBlocks);
     }
     
     public static TetrisPiece buildTPiece() {
@@ -156,7 +136,7 @@ class TetrisPiece {
         newBlocks[1][0] = 1;
         newBlocks[1][1] = 1;
         newBlocks[1][2] = 1;
-        return new TetrisPiece(newBlocks, 3);
+        return new TetrisPiece(newBlocks);
     }
     
     public static TetrisPiece buildRightLPiece() {
@@ -167,7 +147,7 @@ class TetrisPiece {
         newBlocks[1][1] = 0;
         newBlocks[2][0] = 1;
         newBlocks[2][1] = 1;
-        return new TetrisPiece(newBlocks, 4);
+        return new TetrisPiece(newBlocks);
     }
     
     public static TetrisPiece buildLeftLPiece() {
@@ -178,7 +158,7 @@ class TetrisPiece {
         newBlocks[1][1] = 1;
         newBlocks[2][0] = 1;
         newBlocks[2][1] = 1;
-        return new TetrisPiece(newBlocks, 5);
+        return new TetrisPiece(newBlocks);
     }
     
     public static TetrisPiece buildLinePiece() {
@@ -187,7 +167,7 @@ class TetrisPiece {
         newBlocks[1][0] = 1;
         newBlocks[2][0] = 1;
         newBlocks[3][0] = 1;
-        return new TetrisPiece(newBlocks, 6);
+        return new TetrisPiece(newBlocks);
     }
     
     public static TetrisPiece buildRandomPiece() {
@@ -225,7 +205,7 @@ class TetrisPiece {
         return 0;
     }
     
-    public TetrisPiece rotatePieceHelper(int code) {
+    public TetrisPiece rotatePieceHelper() {
         // perform a single 90 degree clockwise rotation
         
         // Flip the dimensions
@@ -240,14 +220,14 @@ class TetrisPiece {
                 newBlocks[col][w-row-1] = blocks[row][col];   
             }
         }
-        return new TetrisPiece(newBlocks, code);
+        return new TetrisPiece(newBlocks);
     }
     
     // rotate this piece n times clockwise 90 degrees
     public TetrisPiece rotatePiece(int n) {
         TetrisPiece current = this;
         for (int i = 0; i < n; i++) {
-            current = current.rotatePieceHelper(current.code);
+            current = current.rotatePieceHelper();
         }
         return current;
     }
@@ -265,7 +245,6 @@ class TetrisPiece {
             }
             result += "\n";
         }
-        result += code + "\n";
         return result;
     }
 }
@@ -362,15 +341,12 @@ class TetrisBoard {
         return true;
     }
     
-    public int eliminateRows() {
-        int elim_rows = 0;
+    public void eliminateRows() {
         for (int row = 0; row < height; row++) {
             if (checkEliminate(row)) {
                 eliminateRow(row);
-                elim_rows++;
             }
         }
-        return elim_rows;
     }
     
     public void aboveFallsDown(int row, int col) {
@@ -402,10 +378,6 @@ class TetrisBoard {
         
         
         if (leftCol < 0 || leftCol + piece.width > width) {
-            // System.out.println("leftCol: " + leftCol);
-            // System.out.println(m.piece);
-            // System.out.println("\t\t\tleftCol < 0: " + (leftCol < 0));
-            // System.out.println("\t\t\tleftCol + piece.width > width: " + (leftCol + piece.width > width));
             return false;
         }
         
@@ -415,7 +387,6 @@ class TetrisBoard {
 
                 if (ledge >= height || board[ledge][leftCol + offset] != 0) {
                     copyPieceToLocation(piece, row, leftCol);
-                    // System.out.println("row > 0: " + (row > 0));
                     return row > 0;
                 }
             }
@@ -430,28 +401,22 @@ class TetrisBoard {
         
         for (int row = 0; row < height; row++) {
             for (int col = 0; col< width; col++) {
-                if(board[row][col] > 0){
-                    result += "x ";
-                }
-                else{
-                    result += "0 ";
-                }
+                result += board[row][col] + " ";
             }
             result += "\n";
         }
         return result;
-    }    
+    }
+    
+    
 }
+
 
 class TetrisBot {
     
     // override this method
     public TetrisMove chooseMove(TetrisBoard board, TetrisPiece current_piece, TetrisPiece next_piece) {
         return new TetrisMove(current_piece, 0);
-    }
-
-    public void getReward(TetrisBoard board, int reward){
-        System.out.println("I got a reward!");
     }
 }
 
@@ -470,18 +435,12 @@ class TetrisGame {
         boolean alive = true;
         TetrisPiece current_piece = TetrisPiece.buildRandomPiece();
         TetrisPiece next_piece = TetrisPiece.buildRandomPiece();
-        int blocks = 0;
         while (alive) {
                        
             //TetrisPiece p = TetrisPiece.buildRandomPiece();
             TetrisMove m = player.chooseMove(b, current_piece, next_piece);
 
-            alive = b.addPiece(m);
-            blocks++;
-            // System.out.println("placed block: " + blocks); 
-            if(!alive){
-                // System.out.println(b);
-            }          
+            alive = b.addPiece(m);           
 
             if (b.hasViewWindow) {
                 b.repaint();
@@ -493,7 +452,7 @@ class TetrisGame {
                 System.out.println("Execution interrupted!");
             }
             
-            int elimRows = b.eliminateRows();
+            b.eliminateRows();
             
             if (b.hasViewWindow) {
                 b.repaint();
@@ -507,19 +466,9 @@ class TetrisGame {
             
             current_piece = next_piece;
             next_piece = TetrisPiece.buildRandomPiece();
-            int reward = 0;
-            if(!alive){
-                reward -= 1000;
-                player.getReward(b, reward);
-            }
-            else{
-                reward = 30 * elimRows;
-                player.getReward(b, reward);
-            }
-
         }
         
-        return blocks;
+        return b.blocksPlaced;
     }
     
     
@@ -549,11 +498,10 @@ class TetrisGame {
         
         TetrisBot player = (TetrisBot) Class.forName(botClassName).newInstance();
         
-        
         int totalScore = 0;
         for (int i = 0; i < NUMBER_GAMES; i++) {
             int gameScore = playGame(BOARD_WIDTH, BOARD_HEIGHT, player, viewPlayback, PLAYBACK_DELAY);
-            System.out.println("\t\t\t" + i + ": Game score: " + gameScore);
+            System.out.println("Game score: " + gameScore);
             totalScore += gameScore;
 
         }
