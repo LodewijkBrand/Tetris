@@ -18,30 +18,36 @@ public class LinearRegression {
 	}
 	c = new Contour(vector_size - 1);
     }
+    
 
     public double predictedValue(double[] state) {
 	double total = theta[0];
-	for(int i=1;i<data.length;i++) {
+	for(int i=1;i<state.length;i++) {
 	    total = theta[i]*state[i-1];
 	}
 	return total;
     }
 
-    public double getReward() {
-	return 0.;
-    }
-    
-    public double getValue(TetrisBoard b) {
-        //evaluate the value of a board state
+    public double getReward(TetrisBoard t, TetrisMove m) {
+        TetrisBoard board = deepCopy(t);
+        int tempRow = t.linesEliminated;
+        boolean alive = t.addPiece(m);
+        if (!alive) {
+            return -1000;
+        }
+        if(t.linesEliminated > tempRow) {
+            return 50;
+        }
+        return 1;
     }
 
     public double getBestQ(TetrisBoard t, TetrisPiece p) {
         ArrayList<TetrisBoard> futureBoards = getFutureBoards(t, p);
         double highestQ = 0;
 	for(TetrisBoard b : futureBoards) {
-	    c.readBoard(t);
-            if (predictedValue(b) > highestQ) {
-                highestQ = predictedValue();
+	    c.readContour(b);
+            if (predictedValue(c.contour) > highestQ) {
+                highestQ = predictedValue(c.contour);
             }
 	    
 	}
@@ -63,10 +69,10 @@ public class LinearRegression {
             
     }
 
-    public void learn(double[] state) {
+    public void learn(double[] state, TetrisBoard b, TetrisMove m) {
 	//do move that was previously chosen
-	double reward = getReward();
-	double gamma = reward + dFactor * getBestQ(state) - predictedValue(state);
+	double reward = getReward(b,m);
+	double gamma = reward + dFactor * getBestQ(b,m.piece) - predictedValue(state);
 	for(int i=1;i<theta.length;i++) {
 	    theta[i] += alpha * gamma * state[i];
 	}
