@@ -67,8 +67,13 @@ public class NNBot {
 
     public static void main(String[] args) {
 	TetrisBoard board = new TetrisBoard(10, 20, false);
-	TetrisPiece piece = TetrisPiece.buildSquarePiece();
+	TetrisPiece piece = TetrisPiece.buildLinePiece();
+	piece = piece.rotatePiece(1);
+	System.out.println(getLegalMoves(board, piece).size());
+
 	TetrisPiece piece2 = TetrisPiece.buildZPiece();
+	System.out.println(getLegalMoves(board, piece2).size());
+
 	TetrisMove move = new TetrisMove(piece, 0);
 	TetrisMove move2 = new TetrisMove(piece2, 7);
 	board.addPiece(move);
@@ -80,20 +85,39 @@ public class NNBot {
     //LOU WORK BELOW HERE!!!
 
     public TetrisMove chooseMove(TetrisBoard board, TetrisPiece current_piece, TetrisPiece next_piece){
-	for(TetrisMove mov : getLegalMoves(board)){
+	for(TetrisMove mov : getLegalMoves(board, current_piece)){
 	    TetrisBoard currentBoard = deepCopy(board);
 	    double reward = getReward(currentBoard, mov);
-
 	}
 	return null;
     }
 
-    public ArrayList<TetrisMove> getLegalMoves(TetrisBoard board){
-	return null;
+    public static  ArrayList<TetrisMove> getLegalMoves(TetrisBoard board, TetrisPiece current_piece){
+	ArrayList<TetrisMove> legalMoves = new ArrayList<TetrisMove>();
+	for (int i = 0; i < 4; i++){
+	    current_piece = current_piece.rotatePiece(1);
+	    for (int col = 0; col < board.width; col++){
+		TetrisBoard currentBoard = deepCopy(board);
+		TetrisMove mov = new TetrisMove(current_piece, col);
+		if (currentBoard.addPiece(mov)){
+		    legalMoves.add(mov);
+		}
+	    }
+	}
+	return legalMoves;
     }
 
-    public double getReward(TetrisBoard board, TetrisMove move){
+    public double getReward(TetrisBoard board, TetrisPiece current_piece){
 	double reward = 0.0;
+	
+	if (getLegalMoves(board, current_piece).size()==0) {
+	    return -100000000;
+	}
+	if (board.addPiece(move)){
+	    
+	}else{
+	    return -1000000000;
+	}
 	return reward;
     }
 }
