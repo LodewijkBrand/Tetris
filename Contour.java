@@ -75,7 +75,6 @@ public class Contour{
 	for(int j=0; j<NUM_OF_PIECES;j++){
 
 	    ArrayList<TetrisMove> moves_for_piece = new ArrayList<>();	
-
 	    //if the piece is a square piece
 	    if(currentPiece.blocks[0][0]==1 && currentPiece.blocks[0][1]==1 && currentPiece.blocks[1][0]==1 && currentPiece.blocks[1][1]==1){
 		//don't create the rotations, just every possible col value
@@ -128,7 +127,3 @@ public class Contour{
 	
 	}*/
     
-
-
-
-}
