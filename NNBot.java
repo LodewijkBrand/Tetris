@@ -87,7 +87,7 @@ public class NNBot {
     public TetrisMove chooseMove(TetrisBoard board, TetrisPiece current_piece, TetrisPiece next_piece){
 	for(TetrisMove mov : getLegalMoves(board, current_piece)){
 	    TetrisBoard currentBoard = deepCopy(board);
-	    double reward = getReward(currentBoard, mov);
+	    double reward = getReward(currentBoard, current_piece);
 	}
 	return null;
     }
@@ -109,14 +109,14 @@ public class NNBot {
 
     public double getReward(TetrisBoard board, TetrisPiece current_piece){
 	double reward = 0.0;
-	
-	if (getLegalMoves(board, current_piece).size()==0) {
-	    return -100000000;
+	for (int r = 0; r < board.height; r++) {
+	    if (board.checkEliminate(r) == true) {
+		reward += 100;
+	    }
 	}
-	if (board.addPiece(move)){
-	    
-	}else{
-	    return -1000000000;
+	//If there are no legal moves left (you've lost) and the reward is zero (you are not about to clear any rows)
+	if (getLegalMoves(board, current_piece).size()==0 && reward == 0) {
+	    return -1000;
 	}
 	return reward;
     }
