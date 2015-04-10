@@ -41,7 +41,7 @@ public class Contour{
 	return b_contour;
     }
 
-
+}
     /*this method takes in a contour and breaks it into 7 chunks of size 4
       @param: the contour to break up
       @return: an array with a chunk (an int[] of size 4) at each index.
