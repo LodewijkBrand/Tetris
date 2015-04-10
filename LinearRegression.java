@@ -25,12 +25,12 @@ public class LinearRegression {
     //NOT DONE
     public double slopeCalc(double[] data, int index) {
 	//we need some value for the next move so we can aim for it
-	double returnable = alpha*(predictedValue(data) - "value of move")*data[index-1];
+	// double returnable = alpha*(predictedValue(data) - "value of move")*data[index-1];
 	return returnable;
     }
     //NOT DONE
     public double interceptCalc(double[] data) {
-	double returnable = alpha*(predictedValue(data) - "value of move");
+	// double returnable = alpha*(predictedValue(data) - "value of move");
 	return returnable;
     }
 }
