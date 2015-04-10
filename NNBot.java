@@ -52,7 +52,8 @@ public class NNBot {
 	return lowest;
     }
 
-    public TetrisBoard deepCopy(TetrisBoard tBoard) {
+    //Return a deepcopy of a TetrisBoard object
+    public static TetrisBoard deepCopy(TetrisBoard tBoard) {
 	int[][] original = tBoard.board;
 	int[][] result = new int[original.length][];
 	for (int i = 0; i < original.length; i++) {
@@ -69,9 +70,9 @@ public class NNBot {
 	TetrisPiece piece = TetrisPiece.buildSquarePiece();
 	TetrisPiece piece2 = TetrisPiece.buildZPiece();
 	TetrisMove move = new TetrisMove(piece, 0);
-	TetrisMove move2 = new TetrisMove(piece2, 5);
+	TetrisMove move2 = new TetrisMove(piece2, 7);
 	board.addPiece(move);
-	board.addPiece(move2);
+	System.out.println(board.addPiece(move2));
 	System.out.println(board);	
 	System.out.println(contour(board));
     }
