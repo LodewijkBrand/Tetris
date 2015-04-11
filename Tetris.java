@@ -421,12 +421,6 @@ class TetrisBot {
 }
 
 
-
-
-
-
-
-
 class TetrisGame {
     
     public static int playGame(int boardWidth, int boardHeight, TetrisBot player, boolean viewPlayback, int playbackDelay) {
@@ -494,7 +488,7 @@ class TetrisGame {
         int BOARD_WIDTH = Integer.parseInt(args[1]);
         int BOARD_HEIGHT = Integer.parseInt(args[2]);
         
-        int NUMBER_GAMES = Integer.parseInt(args[3]);
+        long NUMBER_GAMES = Long.parseLong(args[3]);
         boolean viewPlayback = Integer.parseInt(args[4]) > 0;
         int PLAYBACK_DELAY = Integer.parseInt(args[5]);      
         
@@ -503,7 +497,6 @@ class TetrisGame {
         //TetrisBot player = (TetrisBot)con1.newInstance();
         
         TetrisBot player = (TetrisBot) Class.forName(botClassName).newInstance();
-        
         
         int totalScore = 0;
         for (int i = 0; i < NUMBER_GAMES; i++) {
