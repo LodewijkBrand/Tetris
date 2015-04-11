@@ -1,15 +1,16 @@
 import java.util.Arrays;
 import java.util.ArrayList;
 
-public class NNBot {
+public class NNBot extends TetrisBot{
 	TDNetwork myNN;
 	final double GAMMA = .5;
 	final double LEARNING_RATE = .7;
-	final double ETA = .5;
+	double ETA = .5;
 	int time = 0;
 
 	public NNBot(){
 	    //EXPERIMENT ON THESE!
+        System.out.println("INITIALIZING NEURAL NETWORK BAD!");
 		myNN = new TDNetwork(10, 3, 1, 1000000, 1, LEARNING_RATE, LEARNING_RATE, .9, .5);
 	}
 
@@ -30,7 +31,6 @@ public class NNBot {
 				}
 			}
 		}
-		System.out.println(contour);
 		format(contour);
 		return contour;
 	}
@@ -91,10 +91,11 @@ public class NNBot {
 		TetrisBoard currentBoard;
 		TetrisBoard nextBoard;
 		ArrayList<TetrisMove> moves = getLegalMoves(board, current_piece); 
-		if (Math.random() < ETA) {
+		if (Math.random() > ETA) {
+            //System.out.println(ETA);
 		    double output;    
 		    double best = Double.MIN_VALUE;
-		    TetrisMove bestMove = null;
+		    TetrisMove bestMove = new TetrisMove(current_piece, 0);
 			for(TetrisMove move : moves){
 				currentBoard = deepCopy(board);
 				currentBoard.addPiece(move);
@@ -110,7 +111,13 @@ public class NNBot {
 		}
 		//Do a random move
 		else {
-			return moves.get((int)(Math.random() * (moves.size()-1)));
+            ETA -= .000001;
+
+            if (moves.size() != 0){
+                return moves.get((int)(Math.random() * (moves.size()-1)));
+            } else {
+                return new TetrisMove(current_piece, 0);
+            }
 		}
 	}
 
