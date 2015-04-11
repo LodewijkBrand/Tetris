@@ -1,4 +1,5 @@
 import java.lang.Math;
+import java.util.Arrays;
 
 public class TDNetwork {
     /* Experimental Parameters: */
@@ -67,6 +68,7 @@ public class TDNetwork {
         for (int i = 0; i < features.length; i++){
             x[t][i] = features[i];
         }
+        //System.out.println(Arrays.toString(features));
         response(); /* forward pass - compute activities */
         //For each output node
         for (k = 0; k < m; k++) {
@@ -81,6 +83,7 @@ public class TDNetwork {
             qValue = y[k];
         }
         updateElig(); /* update eligibility traces */
+        //System.out.println(Arrays.deepToString(w));
         return qValue;
     }
 
@@ -162,6 +165,7 @@ public class TDNetwork {
             for (j = 0; j <= num_hidden; j++) {
                 //Update the weight as BETA * error at ouput * output trace for hidden node j and output node k
                 w[j][k] += BETA * error[k] * ew[j][k];
+                System.out.println(error[k]);
                 //For each input node
                 for (i = 0; i <= n; i++) {
                     //Update the weight as ALPHA * error at input * hidden trace for input node i, hidden node j, and output node k

@@ -89,8 +89,10 @@ public class NNBot extends TetrisBot{
 	public TetrisMove chooseMove(TetrisBoard board, TetrisPiece current_piece, TetrisPiece next_piece){
 	    time++;
 		TetrisBoard currentBoard;
-		TetrisBoard nextBoard;
 		ArrayList<TetrisMove> moves = getLegalMoves(board, current_piece); 
+		if (ETA <= .1) {
+		    System.out.println("HI");
+		}
 		if (Math.random() > ETA) {
             //System.out.println(ETA);
 		    double output;    
@@ -111,12 +113,20 @@ public class NNBot extends TetrisBot{
 		}
 		//Do a random move
 		else {
-            ETA -= .000001;
+            ETA -= .00001;
 
             if (moves.size() != 0){
-                return moves.get((int)(Math.random() * (moves.size()-1)));
+                TetrisMove move = moves.get((int)(Math.random() * (moves.size()-1)));
+                currentBoard = deepCopy(board);
+                currentBoard.addPiece(move);
+                myNN.timeStep(contour(currentBoard), getReward(currentBoard, next_piece), time);
+                return move;
             } else {
-                return new TetrisMove(current_piece, 0);
+                TetrisMove move = new TetrisMove(current_piece, 0);
+                currentBoard = deepCopy(board);
+                currentBoard.addPiece(move);
+                myNN.timeStep(contour(currentBoard), getReward(currentBoard, next_piece), time);
+                return move;
             }
 		}
 	}
@@ -139,14 +149,16 @@ public class NNBot extends TetrisBot{
 	//TODO: TEST THIS, The reward is 100 for each line completed, perhaps just give a reward for completing any lines???
 	public double getReward(TetrisBoard board, TetrisPiece current_piece){
 		double reward = 0.0;
+		
 		for (int r = 0; r < board.height; r++) {
 			if (board.checkEliminate(r) == true) {
-				reward += 100;
+			    reward += .25;
 			}
 		}
+		
 		//If there are no legal moves left (you've lost) and the reward is zero (you are not about to clear any rows)
 		if (reward == 0 && getLegalMoves(board, current_piece).size()==0) {
-			return -100;
+			return -1;
 		}
 		return reward;
 	}
