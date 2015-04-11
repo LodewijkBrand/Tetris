@@ -14,18 +14,17 @@ public class TDNetwork {
 
     /* Network Data Structure: */
 
-    double[][]  x = new double[time_steps][n+1]; /* input data (units) */
-    double[]  h = new double[num_hidden+1]; /* hidden layer */
-    double[]  y = new double[m]; /* output layer */
-    double[][]  w = new double[num_hidden+1][m]; /* weights for the hidden layer*/
-    double[][]  v = new double[n+1][num_hidden+1]; /* weights for the input layer*/
-    /* Learning Data Structure: */
+    double[][] x; /* input data (units) */
+    double[]  h;
+    double[]  y;
+    double[][]  w;
+    double[][]  v;
 
-    double[]  old_y = new double[m];
-    double[][][]  ev = new double[n+1][num_hidden+1][m]; /* hidden trace */
-    double[][]  ew = new double[num_hidden+1][m]; /* output trace */
-    double[]  r = new double[time_steps]; /* reward */
-    double[]  error = new double[m];  /* TD error */
+    double[]  old_y;
+    double[][][]  ev;
+    double[][]  ew; 
+    double[]  r;
+    double[]  error;
     int    t;  /* current time step */
 
     public TDNetwork(int _n, int _num_hidden, int _m, int _time_steps, double _BIAS, double _ALPHA, double _BETA, double _GAMMA, double _LAMBDA){
@@ -39,6 +38,17 @@ public class TDNetwork {
         GAMMA = _GAMMA;
         LAMBDA = _LAMBDA;
         int k;
+        x = new double[time_steps][n+1]; /* input data (units) */
+        h = new double[num_hidden+1]; /* hidden layer */
+        y = new double[m]; /* output layer */
+        w = new double[num_hidden+1][m]; /* weights for the hidden layer*/
+        v = new double[n+1][num_hidden+1]; /* weights for the input layer*/
+        old_y = new double[m];
+        ev = new double[n+1][num_hidden+1][m]; /* hidden trace */
+        ew = new double[num_hidden+1][m]; /* output trace */
+        r = new double[time_steps]; /* reward */
+        error = new double[m];  /* TD error */
+            
         initNetwork();
 
         t = 0; /* No learning on time step 0 */
