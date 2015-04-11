@@ -25,7 +25,7 @@ public class LinearRegression extends TetrisBot{
     	theta = new double[11];
     	r = new Random();
     	for(int i = 0; i < theta.length; i++) {
-    	    theta[i] = r.nextInt();
+    	    theta[i] = r.nextInt(10);
     	}
         c = new Contour();
         pieces = getPieces();
@@ -47,11 +47,13 @@ public class LinearRegression extends TetrisBot{
         if (!alive) {
             return -1000;
         }
-        if(board.linesEliminated > tempRow) {
+        else if(board.linesEliminated > tempRow) {
             System.out.println("Reward!! " + 50 * board.linesEliminated - tempRow);
             return 50 * board.linesEliminated - tempRow;
         }
-        return 1;
+        else{
+            return 0;
+        }
     }
 
     public double getBestQ() {
