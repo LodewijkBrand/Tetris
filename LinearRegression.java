@@ -6,119 +6,125 @@ public class LinearRegression extends TetrisBot{
     double alpha = 0.05;
     double epsilon = 0.7;
     double dFactor = 0.4;
+    
     Random r;
     Contour c;
+    
+    double[] prev_state;
+    TetrisMove moveChoice;
+    TetrisBoard prev_board;
+    TetrisBoard curr_board;
+    
+    TetrisPiece[] pieces = new TetrisPiece[7];
+    ArrayList<ArrayList<TetrisMove>> allPieceMoves;
     
     
     //before I did batch learning, but this will be iterative learning
     public LinearRegression() {
-    	theta = new double[10];
+    	theta = new double[11];
     	r = new Random();
-    	for(int i=0;i<10;i++) {
-    	    theta[i] = r.nextInt(10);
+    	for(int i = 0; i < theta.length; i++) {
+    	    theta[i] = r.nextInt();
     	}
-    	c = new Contour(10);
+        c = new Contour();
+        pieces = getPieces();
+        allPieceMoves = getAllPieceMoves();
     }
-    
 
     public double predictedValue(double[] state) {
-	    double total = theta[0];
-    	for(int i=1;i<state.length;i++) {
-    	    total = theta[i]*state[i-1];
+	    double value = 0;
+    	for(int i = 0; i < state.length; i++) {
+    	    value += theta[i] * state[i];
     	}
-    	return total;
+    	return value;
     }
 
-    public double getReward(TetrisBoard t, TetrisMove m) {
-        TetrisBoard board = deepCopy(t);
-        int tempRow = t.linesEliminated;
-        boolean alive = t.addPiece(m);
+    public double getReward() {
+        TetrisBoard board = deepCopy(prev_board);
+        int tempRow = board.linesEliminated;
+        boolean alive = board.addPiece(moveChoice);
         if (!alive) {
             return -1000;
         }
-        if(t.linesEliminated > tempRow) {
+        if(board.linesEliminated > tempRow) {
             return 50;
         }
         return 1;
     }
 
-    public double getBestQ(TetrisBoard t, TetrisPiece p) {
-        ArrayList<TetrisBoard> futureBoards = getFutureBoards(t, p);
-        double highestQ = 0;
-    	for(TetrisBoard b : futureBoards) {
-    	    c.readContour(b);
-            if (predictedValue(c.contour) > highestQ) {
-                highestQ = predictedValue(c.contour);
+    public double getBestQ() {
+        ArrayList<ArrayList<TetrisBoard>> futureBoards = getFutureBoards();
+        double[] bestQs = new double[7];
+        int piece_index = 0;
+        for(ArrayList<TetrisBoard> futurePieceBoards : futureBoards){
+            Double bestQ = -(Double.MAX_VALUE);
+            for(TetrisBoard b : futurePieceBoards){
+                double[] state = c.readContour(b);
+                if(predictedValue(state) > bestQ){
+                    bestQ = predictedValue(state);
+                }
             }
-    	}
-        return highestQ;
+            bestQs[piece_index] = bestQ;
+            piece_index++;
+        }
+        Arrays.sort(bestQs);
+        double min = bestQs[0];
+        return min;
     }
 
-    public TetrisMove getBestMove(TetrisBoard t, TetrisPiece p) {
-        ArrayList<TetrisMove> futureMoves = getFutureMoves(t, p);
-        double highestQ = 0;
-        TetrisMove bestMove = futureMoves.get(0);
-        for(TetrisMove m : futureMoves) {
-            TetrisBoard temp = deepCopy(t);
+    public ArrayList<ArrayList<TetrisBoard>> getFutureBoards() {
+        ArrayList<ArrayList<TetrisBoard>> futureBoards = new ArrayList<>();
+        for(int i = 0; i < allPieceMoves.size(); i++){
+            ArrayList<TetrisBoard> pMoves = new ArrayList<>();
+            for(int j = 0; j < allPieceMoves.get(i).size(); j++){
+                TetrisMove m = allPieceMoves.get(i).get(j);
+                TetrisBoard b = deepCopy(curr_board);
+                b.addPiece(m);
+                pMoves.add(b);
+            }
+            futureBoards.add(pMoves);
+        }
+        return futureBoards;     
+    }
+
+    public TetrisMove getBestMove(TetrisBoard b, TetrisPiece p) {
+        ArrayList<TetrisMove> moves = getPieceMoves(p);
+        double bestQ = -(Double.MAX_VALUE);
+        TetrisMove bestMove = moves.get(0);
+        for(TetrisMove m : moves) {
+            TetrisBoard temp = deepCopy(b);
             temp.addPiece(m);
-            c.readContour(temp);
-                if (predictedValue(c.contour) > highestQ) {
-                    highestQ = predictedValue(c.contour);
+            double[] state = c.readContour(temp);
+                if (predictedValue(state) > bestQ) {
+                    bestQ = predictedValue(state);
                     bestMove = m;
                 }
         }
         return bestMove;
     }
-    
-    public ArrayList<TetrisBoard> getFutureBoards(TetrisBoard t, TetrisPiece _p) {
-        ArrayList<TetrisBoard> futureBoards = new ArrayList<TetrisBoard>();
-        for (int i=0;i<4;i++) {
-            for (int j=0;j<t.width;j++) {
-               TetrisPiece p = _p.rotatePiece(i);
-               TetrisMove m = new TetrisMove(p, j);
-               TetrisBoard b = deepCopy(t);
-               b.addPiece(m);
-               futureBoards.add(b);
-            }
-        }
-        return futureBoards;     
-    }
 
-    public ArrayList<TetrisMove> getFutureMoves(TetrisBoard t, TetrisPiece _p) {
-        ArrayList<TetrisMove> futureMoves = new ArrayList<>();
-        for (int i=0;i<4;i++) {
-            for (int j=0;j<t.width;j++) {
-               TetrisPiece p = _p.rotatePiece(i);
-               TetrisMove m = new TetrisMove(p, j);
-               futureMoves.add(m);
-            }
-        }
-        return futureMoves;     
-    }
-
-    public void learn(double[] state, TetrisBoard b, TetrisMove m) {
-    	//do move that was previously chosen
-    	double reward = getReward(b,m);
-    	double gamma = reward + dFactor * getBestQ(b,m.piece) - predictedValue(state);
-    	for(int i=1;i<theta.length;i++) {
-    	    theta[i] += alpha * gamma * state[i];
+    public void learn() {
+        //do move that was previously chosen
+    	double reward = getReward();
+    	double gamma = reward + dFactor * getBestQ() - predictedValue(prev_state);
+    	for(int i = 0; i < theta.length; i++) {
+    	    theta[i] += alpha * gamma * prev_state[i];
     	}
-        theta[0] += alpha * gamma;
     }
 
     public TetrisMove chooseMove(TetrisBoard board, TetrisPiece current_piece, TetrisPiece next_piece) {
         double random = Math.random();
         if(random < epsilon){
-            TetrisMove randomMove = chooseRandomMove(board, current_piece, next_piece);
-            double[] state = c.readContour(board).contour;
-            learn(state, board, randomMove);
-            return randomMove;
+            moveChoice = chooseRandomMove(board, current_piece, next_piece);
+            setVars(board);
+            learn();
+            return moveChoice;
         }
         else{
-            TetrisMove bestMove = getBestMove(board, current_piece);
-            double[] state = c.readContour(board).contour;
-            learn(state, board, bestMove);
-            return bestMove;
+            moveChoice = getBestMove(board, current_piece);
+            setVars(board);
+            learn();
+            return moveChoice;
         }
     }
 
@@ -129,11 +135,23 @@ public class LinearRegression extends TetrisBot{
         return new TetrisMove(current_piece, col);
     }
 
+    public void setVars(TetrisBoard board){
+        prev_board = deepCopy(board);
+        prev_state = c.readContour(prev_board);
+        curr_board = deepCopy(board);
+        curr_board.addPiece(moveChoice);
+        double[] curr_state = c.readContour(curr_board);
+        // for(int i = 0; i < prev_state.length; i++){
+        //     System.out.print(curr_state[i] + "  ");
+        // }
+        // System.out.println("\n");
+    }
+
     public TetrisBoard deepCopy(TetrisBoard _t) {
         TetrisBoard t = new TetrisBoard(_t.width, _t.height, false);
         t.blocksPlaced = _t.blocksPlaced;
-        for (int r=0;r<_t.board.length;r++) {
-            for (int c=0;c<_t.board[0].length;c++) {
+        for (int r = 0; r < _t.board.length; r++) {
+            for (int c = 0; c <_t.board[0].length; c++) {
                 t.board[r][c] = _t.board[r][c];
             }
         }
@@ -142,8 +160,38 @@ public class LinearRegression extends TetrisBot{
         return t;
     }
 
-    public void learnStuffGood(){
+    public ArrayList<ArrayList<TetrisMove>> getAllPieceMoves(){
+        ArrayList<ArrayList<TetrisMove>> allPMoves = new ArrayList<>();
+        for(int i = 0; i < pieces.length; i++){
+            allPMoves.add(getPieceMoves(pieces[i]));
+        }
+        return allPMoves;
+    }
 
+    public ArrayList<TetrisMove> getPieceMoves(TetrisPiece piece){
+        ArrayList<TetrisMove> pieceMoves = new ArrayList<>();
+        ArrayList<TetrisPiece> rotatedPieces = new ArrayList<>();
+        for(int i = 0; i < 4; i++){
+            rotatedPieces.add(piece.rotatePiece(i));
+            for(int j = 0; j < 10 - rotatedPieces.get(i).width + 1; j++){
+                TetrisMove move = new TetrisMove(rotatedPieces.get(i), j);
+                pieceMoves.add(move);
+            }
+        }
+        return pieceMoves;
+    }
+
+
+    public TetrisPiece[] getPieces(){
+        TetrisPiece[] pieces = new TetrisPiece[7];
+        pieces[0] = TetrisPiece.buildSquarePiece();
+        pieces[1] = TetrisPiece.buildSPiece();
+        pieces[2] = TetrisPiece.buildZPiece();
+        pieces[3] = TetrisPiece.buildTPiece();
+        pieces[4] = TetrisPiece.buildRightLPiece();
+        pieces[5] = TetrisPiece.buildLeftLPiece();
+        pieces[6] = TetrisPiece.buildLinePiece();
+        return pieces;
     }
 
 }
