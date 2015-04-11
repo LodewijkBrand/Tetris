@@ -48,7 +48,7 @@ public class LinearRegression extends TetrisBot{
             return -1000;
         }
         else if(board.linesEliminated > tempRow) {
-            System.out.println("Reward!! " + 50 * board.linesEliminated - tempRow);
+            System.out.println("Reward!! " + (50 * board.linesEliminated - tempRow));
             return 50 * board.linesEliminated - tempRow;
         }
         else{
