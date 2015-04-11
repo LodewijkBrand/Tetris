@@ -4,11 +4,12 @@ public class LinearRegression extends TetrisBot{
 
     double[] theta;
     double alpha = 0.05;
-    double epsilon = 0.7;
+    double epsilon = 1.0;
     double dFactor = 0.4;
     
     Random r;
     Contour c;
+    int move_count;
     
     double[] prev_state;
     TetrisMove moveChoice;
@@ -47,7 +48,8 @@ public class LinearRegression extends TetrisBot{
             return -1000;
         }
         if(board.linesEliminated > tempRow) {
-            return 50;
+            System.out.println("Reward!! " + 50 * board.linesEliminated - tempRow);
+            return 50 * board.linesEliminated - tempRow;
         }
         return 1;
     }
@@ -113,7 +115,14 @@ public class LinearRegression extends TetrisBot{
     }
 
     public TetrisMove chooseMove(TetrisBoard board, TetrisPiece current_piece, TetrisPiece next_piece) {
+        move_count++;
         double random = Math.random();
+        if(move_count % 5000 == 0){
+            epsilon *= 0.999;
+            System.out.println("\t\t\tmove_count: " + move_count);
+            System.out.println("\t\t\tepsilon: " + epsilon);
+        }
+            
         if(random < epsilon){
             moveChoice = chooseRandomMove(board, current_piece, next_piece);
             setVars(board);
