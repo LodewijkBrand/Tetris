@@ -15,18 +15,18 @@ public class TDNetwork {
 	
     /* Network Data Structure: */
 
-    double[][]  x = new double[time_steps][MAX_UNITS]; /* input data (units) */
-    double[]  h = new double[MAX_UNITS]; /* hidden layer */
-    double[]  y = new double[MAX_UNITS]; /* output layer */
-    double[][]  w = new double[MAX_UNITS][MAX_UNITS]; /* weights for the hidden layer*/
-    double[][]  v = new double[MAX_UNITS][MAX_UNITS]; /* weights for the input layer*/
+    double[][]  x = new double[time_steps][n+1]; /* input data (units) */
+    double[]  h = new double[num_hidden+1]; /* hidden layer */
+    double[]  y = new double[m]; /* output layer */
+    double[][]  w = new double[num_hidden+1][m]; /* weights for the hidden layer*/
+    double[][]  v = new double[n+1][num_hidden+1]; /* weights for the input layer*/
     /* Learning Data Structure: */
 
-    double[]  old_y = new double[MAX_UNITS];
-    double[][][]  ev = new double[MAX_UNITS][MAX_UNITS][MAX_UNITS]; /* hidden trace */
-    double[][]  ew = new double[MAX_UNITS][MAX_UNITS]; /* output trace */
-    double[][]  r = new double[time_steps][MAX_UNITS]; /* reward */
-    double[]  error = new double[MAX_UNITS];  /* TD error */
+    double[]  old_y = new double[m];
+    double[][][]  ev = new double[n+1][num_hidden+1][m]; /* hidden trace */
+    double[][]  ew = new double[num_hidden+1][m]; /* output trace */
+    double[][]  r = new double[time_steps]; /* reward */
+    double[]  error = new double[m];  /* TD error */
     int    t;  /* current time step */
 	
     public TDNetwork(){
@@ -35,10 +35,10 @@ public class TDNetwork {
 
 	int t = 0; /* No learning on time step 0 */
 	response(); /* Just compute old response (old_y)... */
-	for (k = 0; k < network.m; k++) {
+	for (k = 0; k < m; k++) {
 	    old_y[k] = y[k];
 	}
-	network.updateElig(); /* ...and prepare the eligibilities */
+	updateElig(); /* ...and prepare the eligibilities */
     }
 
     public void timeStep(int[] features){
@@ -46,18 +46,18 @@ public class TDNetwork {
 	for (int i = 0; i < features.length; i++){
 	    x[t][i] = features[i];
 	}
-	network.response(); /* forward pass - compute activities */
+	response(); /* forward pass - compute activities */
 	//For each output node
-	for (k = 0; k < network.m; k++) {
+	for (k = 0; k < m; k++) {
 	    //Calculate the error as: the reward + GAMMA * output - old output (error is 0 if Gamma*y[k] +r == old_y[k])
-	    network.error[k] = network.r[t][k] + network.GAMMA * network.y[k] - network.old_y[k]; /* form errors */
+	    error[k] = r[t] + GAMMA * y[k] - old_y[k]; /* form errors */
 	}
-	network.tdLearn(); /* backward pass - learning */
-	network.response(); /* forward pass must be done twice to form TD errors */
-	for (k = 0; k < network.m; k++) {
-	    network.old_y[k] = network.y[k]; /* for use in next cycle's TD errors */
+	tdLearn(); /* backward pass - learning */
+	response(); /* forward pass must be done twice to form TD errors */
+	for (k = 0; k < m; k++) {
+	    old_y[k] = y[k]; /* for use in next cycle's TD errors */
 	}
-	network.updateElig(); /* update eligibility traces */
+	updateElig(); /* update eligibility traces */
     }
 	
     public void initNetwork() {
