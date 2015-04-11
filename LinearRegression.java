@@ -44,11 +44,12 @@ public class LinearRegression extends TetrisBot{
         TetrisBoard board = deepCopy(prev_board);
         int tempRow = board.linesEliminated;
         boolean alive = board.addPiece(moveChoice);
+        board.eliminateRows();
         if (!alive) {
             return -1000;
         }
         else if(board.linesEliminated > tempRow) {
-            System.out.println("Reward!! " + (50 * board.linesEliminated - tempRow));
+            System.out.println("\t\t\t\tReward!! " + (50 * board.linesEliminated - tempRow));
             return 50 * board.linesEliminated - tempRow;
         }
         else{
