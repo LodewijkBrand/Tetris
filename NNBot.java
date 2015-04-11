@@ -2,30 +2,31 @@ import java.util.Arrays;
 import java.util.ArrayList;
 
 public class NNBot {
-	NeuralNetwork myNN;
+	TDNetwork myNN;
 	final double GAMMA = .5;
 	final double LEARNING_RATE = .7;
 	final double ETA = .5;
+	int time = 0;
 
 	public NNBot(){
-		myNN = new NeuralNetwork();
+	    //EXPERIMENT ON THESE!
+		myNN = new TDNetwork(10, 3, 1, 1000000, 1, LEARNING_RATE, LEARNING_RATE, .9, .5);
 	}
 
 	//Returns an integer array 
-	public static ArrayList<Double> contour(TetrisBoard tBoard){
+	public double[] contour(TetrisBoard tBoard){
 		int[][] board = tBoard.board;
-		ArrayList<Double> contour = new ArrayList<Double>();
-		int lowestBlock = 0;
+		double[] contour = new double[tBoard.width];
 		//Find the heights of all of the columns
 		//note that a Tetrisboard.board is stored as [row][column]
 		for (int c = 0; c<tBoard.width; c++){
 			for(int r = 0; r<tBoard.height; r++){
 				if (board[r][c] != 0) {
-					contour.add((double)tBoard.height-r);
+					contour[c] = (double)(tBoard.height-r);
 					break;
 				}
 				else if (r == tBoard.height-1 && board[r][c] == 0) {
-					contour.add(0.0);
+					contour[c] = (0.0);
 				}
 			}
 		}
@@ -35,19 +36,19 @@ public class NNBot {
 	}
 
 	//Finds the lowest value in the array and subtracts that value from all other value in the array and returns it
-	public static void format(ArrayList<Double> contour) {
+	public static void format(double[] contour) {
 		double lowest = findLowest(contour);
-		for (int i = 0; i < contour.size(); i++) {
-			contour.set(i, contour.get(i)-lowest);
+		for (int i = 0; i < contour.length; i++) {
+			contour[i] = (contour[i]-lowest);
 		}
 	}
 
 	//Find the lowest number in an array and return it
-	public static double findLowest(ArrayList<Double> contour) {
-		double lowest = contour.get(0);
-		for (int i = 1; i < contour.size(); i++) {
-			if (contour.get(i) < lowest) {
-				lowest = contour.get(i);
+	public static double findLowest(double[] contour) {
+		double lowest = contour[0];
+		for (int i = 1; i < contour.length; i++) {
+			if (contour[i] < lowest) {
+				lowest = contour[i];
 			}
 		}
 		return lowest;
@@ -67,7 +68,7 @@ public class NNBot {
 	}
 
 	public static void main(String[] args) {
-		TetrisBoard board = new TetrisBoard(10, 20, false);
+/*		TetrisBoard board = new TetrisBoard(10, 20, false);
 		TetrisPiece piece = TetrisPiece.buildLinePiece();
 		piece = piece.rotatePiece(1);
 		System.out.println(getLegalMoves(board, piece).size());
@@ -80,45 +81,37 @@ public class NNBot {
 		board.addPiece(move);
 		System.out.println(board.addPiece(move2));
 		System.out.println(board);	
-		System.out.println(contour(board));
+		System.out.println(contour(board));*/
 	}
 
 	//LOU WORK BELOW HERE!!!
 
 	public TetrisMove chooseMove(TetrisBoard board, TetrisPiece current_piece, TetrisPiece next_piece){
+	    time++;
 		TetrisBoard currentBoard;
-		TetrisBoard boardCopy;
-		double target;
-		double output;
-		for(TetrisMove move : getLegalMoves(board, current_piece)){
-			currentBoard = deepCopy(board);
-			currentBoard.addPiece(move);
-			//Pick the move with the highest output with chance ETA
-			output = getQValue(currentBoard);
-			target = getTarget(currentBoard, current_piece, next_piece);
-			//backprop(target, output);
-		}
-		return null;
-	}
-
-	public double getTarget(currentBoard, current_piece, next_piece) {
-		//The reward of being in the current state
-		reward = getReward(currentBoard, current_piece);
-		double reward;
-		double max;
-		ArrayList<TetrisMove> nextMoves = getLegalMoves(currentBoard, next_piece);
-		if (nextMoves.size() > 0) {
-			max = nextMoves.get(0);
-			for (int i = 1; i < nextMoves.size(); i++) {
-				boardCopy = deepCopy(currentBoard);
-				boardCopy.addPiece(nextMoves.get(i));
-				getQValue(boardCopy);
+		TetrisBoard nextBoard;
+		ArrayList<TetrisMove> moves = getLegalMoves(board, current_piece); 
+		if (Math.random() < ETA) {
+		    double output;    
+		    double best = Double.MIN_VALUE;
+		    TetrisMove bestMove = null;
+			for(TetrisMove move : moves){
+				currentBoard = deepCopy(board);
+				currentBoard.addPiece(move);
+				//Pick the move with the highest outputx[t][n]=BIAS; with chance ETA
+				output = myNN.timeStep(contour(currentBoard), getReward(currentBoard, next_piece), time);
+				if (output > best) {
+				    best = output;
+				    bestMove = move;
+				}
+				//backprop(target, output);
 			}
+			return bestMove;
 		}
+		//Do a random move
 		else {
-			max = -1
+			return moves.get((int)(Math.random() * (moves.size()-1)));
 		}
-
 	}
 
 	public static  ArrayList<TetrisMove> getLegalMoves(TetrisBoard board, TetrisPiece current_piece){
@@ -135,17 +128,18 @@ public class NNBot {
 		}
 		return legalMoves;
 	}
-
+	
+	//TODO: TEST THIS, The reward is 100 for each line completed, perhaps just give a reward for completing any lines???
 	public double getReward(TetrisBoard board, TetrisPiece current_piece){
 		double reward = 0.0;
 		for (int r = 0; r < board.height; r++) {
 			if (board.checkEliminate(r) == true) {
-				reward += .25;
+				reward += 100;
 			}
 		}
 		//If there are no legal moves left (you've lost) and the reward is zero (you are not about to clear any rows)
-		if (getLegalMoves(board, current_piece).size()==0 && reward == 0) {
-			return -1;
+		if (reward == 0 && getLegalMoves(board, current_piece).size()==0) {
+			return -100;
 		}
 		return reward;
 	}
