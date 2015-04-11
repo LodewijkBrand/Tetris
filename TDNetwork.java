@@ -60,7 +60,7 @@ public class TDNetwork {
         response(); /* forward pass - compute activities */
         //For each output node
         for (k = 0; k < m; k++) {
-            //Calculate the error as: the reward + GAMMA * output - old output (error is 0 if Gamma*y[k] +r == old_y[k])
+            //Calculate the error as: the reward + GAMMA * output - old output (error is 0 if Gamma*y[k] + r == old_y[k])
             error[k] = r[t] + GAMMA * y[k] - old_y[k]; /* form errors */
         }
         tdLearn(); /* backward pass - learning */
