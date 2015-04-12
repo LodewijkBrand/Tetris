@@ -58,6 +58,14 @@ public class TDNetwork {
         updateElig(); /* ...and prepare the eligibilities */
     }
 
+    public double[] feedForward(double[] features){
+	for (int i = 0; i < features.length; i++){
+            x[i] = features[i];
+        }
+	response(); //Feed the current feature forward (NO LEARNING)
+	return y; //Return current output
+    }
+
     public double timeStep(double[] features, double _reward){
         int k;
         double qValue = 0.0;
