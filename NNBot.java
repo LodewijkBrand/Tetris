@@ -14,6 +14,35 @@ public class NNBot extends TetrisBot{
 	myNN = new TDNetwork(10, 3, 1, 1000000, 1, LEARNING_RATE, LEARNING_RATE, .9, .5);
     }
 
+	//Returns an integer array 
+	public double[] contour(TetrisBoard tBoard, Boolean format){
+		int[][] board = tBoard.board;
+		double[] contour = new double[tBoard.width];
+		//Find the heights of all of the columns
+		//note that a Tetrisboard.board is stored as [row][column]
+		for (int c = 0; c<tBoard.width; c++){
+			for(int r = 0; r<tBoard.height; r++){
+				if (board[r][c] != 0) {
+					contour[c] = (double)(tBoard.height-r);
+					break;
+				}
+				else if (r == tBoard.height-1 && board[r][c] == 0) {
+					contour[c] = (0.0);
+				}
+			}
+		}
+		if (format) {
+		    format(contour);
+		}
+		return contour;
+	}
+
+	//Finds the lowest value in the array and subtracts that value from all other value in the array and returns it
+	public static void format(double[] contour) {
+		double lowest = findLowest(contour);
+		for (int i = 0; i < contour.length; i++) {
+			contour[i] = (contour[i]-lowest);
+			
     //Returns an integer array 
     public double[] contour(TetrisBoard tBoard){
 	int[][] board = tBoard.board;
@@ -84,6 +113,28 @@ public class NNBot extends TetrisBot{
 			System.out.println(contour(board));*/
     }
 
+    public TetrisMove chooseMove(TetrisBoard board, TetrisPiece current_piece, TetrisPiece next_piece){
+	time++;
+	TetrisBoard currentBoard;
+	ArrayList<TetrisMove> moves = getLegalMoves(board, current_piece); 
+	//System.out.println(ETA);
+	double output;    
+	double best = Double.MIN_VALUE;
+	TetrisMove bestMove = new TetrisMove(current_piece, 0);
+	for(TetrisMove move : moves){
+	    currentBoard = deepCopy(board);
+	    currentBoard.addPiece(move);
+	    //Pick the move with the highest outputx[t][n]=BIAS; with chance ETA
+	    output = myNN.timeStep(contour(currentBoard, true), getReward(currentBoard, next_piece), time);
+	    if (output > best) {
+		best = output;
+		bestMove = move;
+	    }
+	    //backprop(target, output);
+	}
+	return bestMove;
+    }
+		//Do a random move
     //LOU WORK BELOW HERE!!!
 
     public TetrisMove chooseMove(TetrisBoard board, TetrisPiece current_piece, TetrisPiece next_piece){
@@ -136,6 +187,11 @@ public class NNBot extends TetrisBot{
 	//If there are no legal moves left (you've lost) and the reward is zero (you are not about to clear any rows)
 	if (reward == 0 && getLegalMoves(board, current_piece).size()==0) {
 	    return -1;
+	}
+	
+	public double getPunishment(TetrisBoard board) {
+	    
+	}
 	}
 	return reward;
     }
