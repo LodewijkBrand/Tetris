@@ -322,7 +322,7 @@ class TetrisBoard {
     
     public void copyPieceToLocation(TetrisPiece p, int row, int col) {
         Random ra = new Random();
-        int rColor = ra.nextInt(255);
+        int rColor = 1 + ra.nextInt(254);
         for (int r = 0; r < p.height; r++) {
             for (int c = 0; c < p.width; c++) {
                 if (p.blocks[r][c] != 0) {
