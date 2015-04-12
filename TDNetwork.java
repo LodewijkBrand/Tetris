@@ -15,7 +15,7 @@ public class TDNetwork {
 
     /* Network Data Structure: */
 
-    double[][] x; /* input data (units) */
+    double[] x; /* input data (units) */
     double[]  h;
     double[]  y;
     double[][]  w;
@@ -24,22 +24,20 @@ public class TDNetwork {
     double[]  old_y;
     double[][][]  ev;
     double[][]  ew; 
-    double[]  r;
+    double r;
     double[]  error;
-    int    t;  /* current time step */
 
-    public TDNetwork(int _n, int _num_hidden, int _m, int _time_steps, double _BIAS, double _ALPHA, double _BETA, double _GAMMA, double _LAMBDA){
+    public TDNetwork(int _n, int _num_hidden, int _m,  double _BIAS, double _ALPHA, double _BETA, double _GAMMA, double _LAMBDA){
         n = _n;
         num_hidden = _num_hidden;
         m = _m;
-        time_steps = _time_steps;
         BIAS = _BIAS;
         ALPHA = _ALPHA;
         BETA = _BETA;
         GAMMA = _GAMMA;
         LAMBDA = _LAMBDA;
-        int k;
-        x = new double[time_steps][n+1]; /* input data (units) */
+        
+        x = new double[n+1]; /* input data (units) */
         h = new double[num_hidden+1]; /* hidden layer */
         y = new double[m]; /* output layer */
         w = new double[num_hidden+1][m]; /* weights for the hidden layer*/
@@ -47,33 +45,31 @@ public class TDNetwork {
         old_y = new double[m];
         ev = new double[n+1][num_hidden+1][m]; /* hidden trace */
         ew = new double[num_hidden+1][m]; /* output trace */
-        r = new double[time_steps]; /* reward */
         error = new double[m];  /* TD error */
             
         initNetwork();
-
-        t = 0; /* No learning on time step 0 */
         response(); /* Just compute old response (old_y)... */
+
+	int k;
         for (k = 0; k < m; k++) {
             old_y[k] = y[k];
         }
+
         updateElig(); /* ...and prepare the eligibilities */
     }
 
-    public double timeStep(double[] features, double _reward, int time){
-        t = time;
+    public double timeStep(double[] features, double _reward){
         int k;
         double qValue = 0.0;
-        r[t] = _reward;
+        r = _reward;
         for (int i = 0; i < features.length; i++){
-            x[t][i] = features[i];
+            x[i] = features[i];
         }
-        //System.out.println(Arrays.toString(features));
         response(); /* forward pass - compute activities */
         //For each output node
         for (k = 0; k < m; k++) {
             //Calculate the error as: the reward + GAMMA * output - old output (error is 0 if Gamma*y[k] + r == old_y[k])
-            error[k] = r[t] + GAMMA * y[k] - old_y[k]; /* form errors */
+            error[k] = r + GAMMA * y[k] - old_y[k]; /* form errors */
         }
         tdLearn(); /* backward pass - learning */
         response(); /* forward pass must be done twice to form TD errors */
@@ -90,9 +86,7 @@ public class TDNetwork {
     public void initNetwork() {
         int s,j,k,i;
         //Set up the bias input node as the last node for each time step
-        for (s=0;s<time_steps;s++) {
-            x[s][n]=BIAS;
-        }
+        x[n] = BIAS;
         //The last hidden node should be set to the bias
         h[num_hidden]=BIAS;
         for (j=0;j<=num_hidden;j++) {
@@ -124,14 +118,14 @@ public class TDNetwork {
         //Set the last hidden nodes bias
         h[num_hidden]=BIAS;
         //Set the last input nodes bias
-        x[t][n]=BIAS;
+        x[n]=BIAS;
         for (j=0;j<num_hidden;j++) {
             //Reset the hidden node values to 0.0
             h[j]=0.0;
             //For each input node
             for (i=0;i<=n;i++) {
                 //Calculate the value of that node to be the input * the input weight
-                h[j]+=x[t][i]*v[i][j];
+                h[j]+=x[i]*v[i][j];
             }
             //Turn the output of each hidden layer node into the sigmoid of the input * the input weight
             h[j]=1.0/(1.0+ Math.exp(-h[j])); /* asymmetric sigmoid */
@@ -201,7 +195,7 @@ public class TDNetwork {
                 ew[j][k] = LAMBDA * ew[j][k] + temp[k] * h[j];
                 for (i = 0; i <= n; i++) {
                     //Set the hidden trace with some affect of the old hidden trace, and the current trace
-                    ev[i][j][k] = LAMBDA * ev[i][j][k] + temp[k] * w[j][k] * h[j] * (1 - h[j]) * x[t][i];
+                    ev[i][j][k] = LAMBDA * ev[i][j][k] + temp[k] * w[j][k] * h[j] * (1 - h[j]) * x[i];
                 }
             }
         }
