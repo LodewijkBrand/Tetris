@@ -96,7 +96,8 @@ public class NNBot extends TetrisBot{
         board.addPiece(move2);
         System.out.println(board);
         System.out.println(Arrays.toString(bot.contour(board, false)));
-        System.out.println(bot.findHighest(bot.contour(board, false)));
+        System.out.println(findHighest(bot.contour(board, false)));
+        System.out.println(bot.getReward(board));
     }
 
     public TetrisMove chooseMove(TetrisBoard board, TetrisPiece current_piece, TetrisPiece next_piece){
@@ -106,22 +107,41 @@ public class NNBot extends TetrisBot{
         double output;    
         double best = Double.MIN_VALUE;
         TetrisMove bestMove = new TetrisMove(current_piece, 0);
-        for(TetrisMove move : moves){
-            currentBoard = deepCopy(board);
-            currentBoard.addPiece(move);
-            //Pick the move with the highest outputx[t][n]=BIAS; with chance ETA
-            //There will only be one output
-            output = myNN.feedForward(contour(currentBoard, true))[0];
-            if (output > best) {
-                best = output;
-                bestMove = move;
+        if (Math.random() > ETA) {
+            for(TetrisMove move : moves){
+                currentBoard = deepCopy(board);
+                currentBoard.addPiece(move);
+                //Pick the move with the highest outputx[t][n]=BIAS; with chance ETA
+                //There will only be one output
+                output = myNN.feedForward(contour(currentBoard, true))[0];
+                if (output > best) {
+                    best = output;
+                    bestMove = move;
+                }
+                //backprop(target, output);
             }
-            //backprop(target, output);
+            learn(board, bestMove, next_piece);
+            return bestMove;
         }
-        currentBoard = deepCopy(board);
+        else {
+            ETA -= .000001;
+            System.out.println(ETA);
+            if (moves.size()>0) {
+                bestMove = moves.get((int)(Math.random() * (moves.size()-1)));
+                learn(board, bestMove, next_piece);
+                return bestMove;
+            }
+            
+            //Every move will lose the game, so choose the first move
+            learn(board, bestMove, next_piece);
+            return bestMove;
+        }
+    }
+    
+    public void learn(TetrisBoard board, TetrisMove bestMove, TetrisPiece next_piece) {
+        TetrisBoard currentBoard = deepCopy(board);
         currentBoard.addPiece(bestMove);
-        myNN.timeStep(contour(currentBoard, true), getReward(currentBoard, next_piece));
-        return bestMove;
+        myNN.timeStep(contour(currentBoard, true), getReward(currentBoard));
     }
 
     public static  ArrayList<TetrisMove> getLegalMoves(TetrisBoard board, TetrisPiece current_piece){
@@ -140,7 +160,7 @@ public class NNBot extends TetrisBot{
     }
 
     //TODO: TEST THIS, The reward is 100 for each line completed, perhaps just give a reward for completing any lines???
-    public double getReward(TetrisBoard board, TetrisPiece current_piece){
+/*    public double getReward(TetrisBoard board, TetrisPiece current_piece){
         double reward = 0.0;
 
         for (int r = 0; r < board.height; r++) {
@@ -154,5 +174,12 @@ public class NNBot extends TetrisBot{
             return -1;
         }
         return reward;
+    }
+*/
+    //TODO: TEST THIS, The reward is 100 for each line completed, perhaps just give a reward for completing any lines???
+    public double getReward(TetrisBoard board){
+        board.eliminateRows();
+        double highest = findHighest(contour(board, false));
+        return (1.0-(highest/(double)board.height));
     }
 }
