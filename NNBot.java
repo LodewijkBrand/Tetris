@@ -6,12 +6,11 @@ public class NNBot extends TetrisBot{
     final double GAMMA = .5;
     final double LEARNING_RATE = .7;
     double ETA = .5;
-    int time = 0;
 
     public NNBot(){
         //EXPERIMENT ON THESE!
         System.out.println("INITIALIZING NEURAL NETWORK BAD!");
-        myNN = new TDNetwork(10, 3, 1, 1000000, 1, LEARNING_RATE, LEARNING_RATE, .9, .5);
+        myNN = new TDNetwork(10, 3, 1, 1, LEARNING_RATE, LEARNING_RATE, .9, .5);
     }
 
     //Returns an integer array 
@@ -96,11 +95,11 @@ public class NNBot extends TetrisBot{
         board.addPiece(move2);
         board.addPiece(move2);
         System.out.println(board);
-        System.out.println(bot.contour(board, false));
+        System.out.println(Arrays.toString(bot.contour(board, false)));
+        System.out.println(bot.findHighest(bot.contour(board, false)));
     }
 
     public TetrisMove chooseMove(TetrisBoard board, TetrisPiece current_piece, TetrisPiece next_piece){
-        time++;
         TetrisBoard currentBoard;
         ArrayList<TetrisMove> moves = getLegalMoves(board, current_piece); 
         //System.out.println(ETA);
@@ -111,13 +110,17 @@ public class NNBot extends TetrisBot{
             currentBoard = deepCopy(board);
             currentBoard.addPiece(move);
             //Pick the move with the highest outputx[t][n]=BIAS; with chance ETA
-            output = myNN.timeStep(contour(currentBoard, true), getReward(currentBoard, next_piece), time);
+            //There will only be one output
+            output = myNN.feedForward(contour(currentBoard, true))[0];
             if (output > best) {
                 best = output;
                 bestMove = move;
             }
             //backprop(target, output);
         }
+        currentBoard = deepCopy(board);
+        currentBoard.addPiece(bestMove);
+        myNN.timeStep(contour(currentBoard, true), getReward(currentBoard, next_piece));
         return bestMove;
     }
 
