@@ -42,6 +42,8 @@ public class NNBot extends TetrisBot{
 		double lowest = findLowest(contour);
 		for (int i = 0; i < contour.length; i++) {
 			contour[i] = (contour[i]-lowest);
+		}
+	}
 			
     //Returns an integer array 
     public double[] contour(TetrisBoard tBoard){
@@ -62,14 +64,6 @@ public class NNBot extends TetrisBot{
 	}
 	format(contour);
 	return contour;
-    }
-
-    //Finds the lowest value in the array and subtracts that value from all other value in the array and returns it
-    public static void format(double[] contour) {
-	double lowest = findLowest(contour);
-	for (int i = 0; i < contour.length; i++) {
-	    contour[i] = (contour[i]-lowest);
-	}
     }
 
     //Find the lowest number in an array and return it
@@ -114,50 +108,25 @@ public class NNBot extends TetrisBot{
     }
 
     public TetrisMove chooseMove(TetrisBoard board, TetrisPiece current_piece, TetrisPiece next_piece){
-	time++;
-	TetrisBoard currentBoard;
-	ArrayList<TetrisMove> moves = getLegalMoves(board, current_piece); 
-	//System.out.println(ETA);
-	double output;    
-	double best = Double.MIN_VALUE;
-	TetrisMove bestMove = new TetrisMove(current_piece, 0);
-	for(TetrisMove move : moves){
-	    currentBoard = deepCopy(board);
-	    currentBoard.addPiece(move);
-	    //Pick the move with the highest outputx[t][n]=BIAS; with chance ETA
-	    output = myNN.timeStep(contour(currentBoard, true), getReward(currentBoard, next_piece), time);
-	    if (output > best) {
-		best = output;
-		bestMove = move;
-	    }
-	    //backprop(target, output);
-	}
-	return bestMove;
-    }
-		//Do a random move
-    //LOU WORK BELOW HERE!!!
-
-    public TetrisMove chooseMove(TetrisBoard board, TetrisPiece current_piece, TetrisPiece next_piece){
-	time++;
-	TetrisBoard currentBoard;
-	ArrayList<TetrisMove> moves = getLegalMoves(board, current_piece); 
-
-	//System.out.println(ETA);
-	double output;    
-	double best = Double.MIN_VALUE;
-	TetrisMove bestMove = new TetrisMove(current_piece, 0);
-	for(TetrisMove move : moves){
-	    currentBoard = deepCopy(board);
-	    currentBoard.addPiece(move);
-	    //Pick the move with the highest outputx[t][n]=BIAS; with chance ETA
-	    output = myNN.timeStep(contour(currentBoard), getReward(currentBoard, next_piece), time);
-	    if (output > best) {
-		best = output;
-		bestMove = move;
-	    }
-	    //backprop(target, output);
-	}
-	return bestMove;
+        time++;
+        TetrisBoard currentBoard;
+        ArrayList<TetrisMove> moves = getLegalMoves(board, current_piece); 
+        //System.out.println(ETA);
+        double output;    
+        double best = Double.MIN_VALUE;
+        TetrisMove bestMove = new TetrisMove(current_piece, 0);
+        for(TetrisMove move : moves){
+            currentBoard = deepCopy(board);
+            currentBoard.addPiece(move);
+            //Pick the move with the highest outputx[t][n]=BIAS; with chance ETA
+            output = myNN.timeStep(contour(currentBoard, true), getReward(currentBoard, next_piece), time);
+            if (output > best) {
+                best = output;
+                bestMove = move;
+            }
+            //backprop(target, output);
+        }
+        return bestMove;
     }
 
     public static  ArrayList<TetrisMove> getLegalMoves(TetrisBoard board, TetrisPiece current_piece){
@@ -177,23 +146,18 @@ public class NNBot extends TetrisBot{
 	
     //TODO: TEST THIS, The reward is 100 for each line completed, perhaps just give a reward for completing any lines???
     public double getReward(TetrisBoard board, TetrisPiece current_piece){
-	double reward = 0.0;
-		
-	for (int r = 0; r < board.height; r++) {
-	    if (board.checkEliminate(r) == true) {
-		reward += .25;
-	    }
-	}
-		
-	//If there are no legal moves left (you've lost) and the reward is zero (you are not about to clear any rows)
-	if (reward == 0 && getLegalMoves(board, current_piece).size()==0) {
-	    return -1;
-	}
-	
-	public double getPunishment(TetrisBoard board) {
-	    
-	}
-	}
-	return reward;
+        double reward = 0.0;
+
+        for (int r = 0; r < board.height; r++) {
+            if (board.checkEliminate(r) == true) {
+                reward += .25;
+            }
+        }
+
+        //If there are no legal moves left (you've lost) and the reward is zero (you are not about to clear any rows)
+        if (reward == 0 && getLegalMoves(board, current_piece).size()==0) {
+            return -1;
+        }
+        return reward;
     }
 }
