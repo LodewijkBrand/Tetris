@@ -15,7 +15,7 @@ public class NNBot extends TetrisBot{
 	}
 
 	//Returns an integer array 
-	public double[] contour(TetrisBoard tBoard){
+	public double[] contour(TetrisBoard tBoard, Boolean format){
 		int[][] board = tBoard.board;
 		double[] contour = new double[tBoard.width];
 		//Find the heights of all of the columns
@@ -31,7 +31,9 @@ public class NNBot extends TetrisBot{
 				}
 			}
 		}
-		format(contour);
+		if (format) {
+		    format(contour);
+		}
 		return contour;
 	}
 
@@ -102,7 +104,7 @@ public class NNBot extends TetrisBot{
 				currentBoard = deepCopy(board);
 				currentBoard.addPiece(move);
 				//Pick the move with the highest outputx[t][n]=BIAS; with chance ETA
-				output = myNN.timeStep(contour(currentBoard), getReward(currentBoard, next_piece), time);
+				output = myNN.timeStep(contour(currentBoard, true), getReward(currentBoard, next_piece), time);
 				if (output > best) {
 				    best = output;
 				    bestMove = move;
@@ -161,5 +163,10 @@ public class NNBot extends TetrisBot{
 			return -1;
 		}
 		return reward;
+	}
+	
+	public double getPunishment(TetrisBoard board) {
+	    
+	}
 	}
 }
