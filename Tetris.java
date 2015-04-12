@@ -247,6 +247,31 @@ class TetrisPiece {
         }
         return result;
     }
+
+    public static int whatPiece(TetrisPiece piece){
+	if (piece.blocks[0][0] == 1 && piece.blocks[0][1] == 1 && piece.blocks[1][0] == 1 && piece.blocks[1][1] == 1){
+	    return 0; //Square Piece
+	}
+	if (piece.blocks[0][0] == 0 && piece.blocks[0][1] == 1 && piece.blocks[0][2] == 0 && piece.blocks[1][0] == 1 && piece.blocks[1][1] == 1 && piece.blocks[1][2] == 1){
+	    return 1; //T Piece
+	}
+	if(piece.blocks[0][0] == 0 && piece.blocks[0][1] == 1 && piece.blocks[0][2] == 1 && piece.blocks[1][0] == 1 && piece.blocks[1][1] == 1 && piece.blocks[1][2] == 0){
+	    return 2; //S Piece
+	}
+	if(piece.blocks[0][0] == 1 && piece.blocks[0][1] == 1 && piece.blocks[0][2] == 0 && piece.blocks[1][0] == 0 && piece.blocks[1][1] == 1 && piece.blocks[1][2] == 1){
+	    return 3; //Z Piece
+	}
+	if(piece.blocks[0][0] == 1 && piece.blocks[1][0] == 1 && piece.blocks[2][0] == 1 && piece.blocks[3][0] == 1){
+	    return 4; //Line Piece
+	}
+	if(piece.blocks[0][0] == 1 && piece.blocks[0][1] == 0 && piece.blocks[1][0] == 1 && piece.blocks[1][1] == 0 && piece.blocks[2][0] == 1 && piece.blocks[2][1] == 1){
+	    return 5; //Right L Piece
+	}
+	if(piece.blocks[0][0] == 0 && piece.blocks[0][1] == 1 && piece.blocks[1][0] == 0 && piece.blocks[1][1] == 1 && piece.blocks[2][0] == 1 && piece.blocks[2][1] == 1){
+	    return 6; //Left L Piece
+	}
+	return -1; //Invalid Piece
+    }
 }
 
 
