@@ -91,7 +91,6 @@ public class NNBot extends TetrisBot{
 	TetrisBoard currentBoard;
 	ArrayList<TetrisMove> moves = getLegalMoves(board, current_piece); 
 
-	//System.out.println(ETA);
 	double output;    
 	double best = Double.MIN_VALUE;
 	TetrisMove bestMove = new TetrisMove(current_piece, 0);
