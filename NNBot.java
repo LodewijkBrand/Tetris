@@ -10,7 +10,7 @@ public class NNBot extends TetrisBot{
     public NNBot(){
         //EXPERIMENT ON THESE!
         System.out.println("INITIALIZING NEURAL NETWORK BAD!");
-        myNN = new TDNetwork(10, 3, 1, 1, LEARNING_RATE, LEARNING_RATE, .9, .5);
+        myNN = new TDNetwork(12, 3, 1, 1, LEARNING_RATE, LEARNING_RATE, .9, .5);
     }
 
     //Returns an integer array 
@@ -98,6 +98,9 @@ public class NNBot extends TetrisBot{
         System.out.println(Arrays.toString(bot.contour(board, false)));
         System.out.println(findHighest(bot.contour(board, false)));
         System.out.println(bot.getReward(board));
+        double[] input = new double[12];
+        input = bot.getInput(board, piece);
+        System.out.println(Arrays.toString(input));
     }
 
     public TetrisMove chooseMove(TetrisBoard board, TetrisPiece current_piece, TetrisPiece next_piece){
@@ -107,19 +110,21 @@ public class NNBot extends TetrisBot{
         double output;    
         double best = Double.MIN_VALUE;
         TetrisMove bestMove = new TetrisMove(current_piece, 0);
+        double[] input;
         if (Math.random() > ETA) {
             for(TetrisMove move : moves){
                 currentBoard = deepCopy(board);
                 currentBoard.addPiece(move);
                 //Pick the move with the highest outputx[t][n]=BIAS; with chance ETA
                 //There will only be one output
-                output = myNN.feedForward(contour(currentBoard, true))[0];
+                input = getInput(currentBoard, next_piece);
+                output = myNN.feedForward(input)[0];
                 if (output > best) {
                     best = output;
                     bestMove = move;
                 }
                 //backprop(target, output);
-            }
+            }            
             learn(board, bestMove, next_piece);
             return bestMove;
         }
@@ -138,10 +143,25 @@ public class NNBot extends TetrisBot{
         }
     }
     
+    //Return the input as an double array of the contour, highest point, and next_piece
+    public double[] getInput(TetrisBoard board, TetrisPiece next_piece) {
+        double[] input = new double[12];
+        double[] cont = contour(board, true);   
+        for (int i = 0; i < cont.length; i++) {
+            input[i] = cont[i];
+        }
+        //DOES THE CONTOUR CHANGE???
+        board.eliminateRows();
+        input[11] = findHighest(contour(board, false));
+        input[12] = TetrisPiece.whatPiece(next_piece);
+        return input;
+    }
+    
     public void learn(TetrisBoard board, TetrisMove bestMove, TetrisPiece next_piece) {
         TetrisBoard currentBoard = deepCopy(board);
         currentBoard.addPiece(bestMove);
-        myNN.timeStep(contour(currentBoard, true), getReward(currentBoard));
+        double[] input = getInput(currentBoard, next_piece);
+        myNN.timeStep(input, getReward(currentBoard));
     }
 
     public static  ArrayList<TetrisMove> getLegalMoves(TetrisBoard board, TetrisPiece current_piece){
