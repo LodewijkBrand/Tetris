@@ -3,16 +3,19 @@ import java.util.ArrayList;
 
 public class NNBot extends TetrisBot{
     TDNetwork myNN;
-    final double GAMMA = .5;
+    final double GAMMA = .9;
+    final double LAMBDA = .5;
     final double ALPHA = .08333;
     final double BETA = .33333;
-    double ETA = 0;
-    int inputNodes = 7;
+    final double BIAS = 1;
+    double ETA = .5;
+    int inputNodes = 6;
 
     public NNBot(){
         //EXPERIMENT ON THESE!
         System.out.println("INITIALIZING NEURAL NETWORK BAD!");
-        myNN = new TDNetwork(inputNodes, 3, 1, 1, ALPHA, BETA, .9, .5);
+        //int _n, int _num_hidden, int _m,  double _BIAS, double _ALPHA, double _BETA, double _GAMMA, double _LAMBDA
+        myNN = new TDNetwork(inputNodes, 3, 1, BIAS, ALPHA, BETA, GAMMA, LAMBDA);
     }
 
     //Returns an integer array 

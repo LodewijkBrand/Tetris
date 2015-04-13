@@ -53,7 +53,7 @@ public class TDNetwork {
         initNetwork();
         response(); /* Just compute old response (old_y)... */
 
-	int k;
+        int k;
         for (k = 0; k < m; k++) {
             old_y[k] = y[k];
         }
@@ -64,7 +64,7 @@ public class TDNetwork {
     public double[] feedForward(double[] features){
 	for (int i = 0; i < features.length; i++){
             x[i] = features[i];
-        }
+	}
 	response(); //Feed the current feature forward (NO LEARNING)
 	return y; //Return current output
     }
@@ -214,8 +214,6 @@ public class TDNetwork {
             }
         }
     }
-    //TODO: Set up a function that populates the x array with inputs each iteration of the game
-
 }	
 
 /*

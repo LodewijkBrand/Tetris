@@ -534,6 +534,6 @@ class TetrisGame {
             totalScore += gameScore;
 
         }
-        System.out.println(botClassName + " achieved average score: " + (totalScore / NUMBER_GAMES));
+        System.out.println(botClassName + " achieved average score: " + ((double)totalScore / NUMBER_GAMES));
     }    
 }
