@@ -528,10 +528,16 @@ class TetrisGame {
         TetrisBot player = (TetrisBot) Class.forName(botClassName).newInstance();
         
         int totalScore = 0;
+        int myScore = 0;
         for (int i = 0; i < NUMBER_GAMES; i++) {
             int gameScore = playGame(BOARD_WIDTH, BOARD_HEIGHT, player, viewPlayback, PLAYBACK_DELAY);
-            System.out.println("Game score: " + gameScore);
+            //System.out.println("Game score: " + gameScore);
             totalScore += gameScore;
+            myScore += gameScore;
+            if (i%50000==0) {
+                System.out.println(botClassName + " achieved average score: " + ((double)myScore / 50000));
+                myScore = 0;
+            }
 
         }
         System.out.println(botClassName + " achieved average score: " + ((double)totalScore / NUMBER_GAMES));

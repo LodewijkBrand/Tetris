@@ -68,11 +68,14 @@ public class TDNetwork {
 	response(); //Feed the current feature forward (NO LEARNING)
 	return y; //Return current output
     }
-
+    
+    int count = 0;
+    double sum = 0;
     public double timeStep(double[] features, double _reward){
         int k;
         double qValue = 0.0;
         r = _reward;
+        count++;
         //System.out.println(Arrays.toString(features));
         for (int i = 0; i < features.length; i++){
             x[i] = features[i];
@@ -83,6 +86,12 @@ public class TDNetwork {
             //Calculate the error as: the reward + GAMMA * output - old output (error is 0 if Gamma*y[k] + r == old_y[k])
             error[k] = r + GAMMA * y[k] - old_y[k]; /* form errors */
         }
+        sum+= Math.abs(error[0]);
+        if (count % 100000 == 0) {
+            System.out.println("AVERAGE:" + ((sum)/100000));
+            sum = 0.0;
+        }
+        
         tdLearn(); /* backward pass - learning */
         response(); /* forward pass must be done twice to form TD errors */
         for (k = 0; k < m; k++) {

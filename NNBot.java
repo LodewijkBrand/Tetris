@@ -1,3 +1,4 @@
+//THINGS TO TRY: Erase eligibility traces after each game
 import java.util.Arrays;
 import java.util.ArrayList;
 
@@ -8,14 +9,14 @@ public class NNBot extends TetrisBot{
     final double ALPHA = .08333;
     final double BETA = .33333;
     final double BIAS = 1;
-    double ETA = .5;
-    int inputNodes = 6;
+    double ETA = 0.1;
+    int inputNodes = 23;
 
     public NNBot(){
         //EXPERIMENT ON THESE!
         System.out.println("INITIALIZING NEURAL NETWORK BAD!");
         //int _n, int _num_hidden, int _m,  double _BIAS, double _ALPHA, double _BETA, double _GAMMA, double _LAMBDA
-        myNN = new TDNetwork(inputNodes, 3, 1, BIAS, ALPHA, BETA, GAMMA, LAMBDA);
+        myNN = new TDNetwork(inputNodes, 2, 1, BIAS, ALPHA, BETA, GAMMA, LAMBDA);
     }
 
     //Returns an integer array 
@@ -135,8 +136,8 @@ public class NNBot extends TetrisBot{
             return bestMove;
         }
         else {
-            ETA -= .000001;
-            System.out.println(ETA);
+            ETA -= ETA * .999999;
+            //System.out.println(ETA);
             if (moves.size()>0) {
                 bestMove = moves.get((int)(Math.random() * (moves.size()-1)));
                 learn(board, bestMove, next_piece);
@@ -152,14 +153,26 @@ public class NNBot extends TetrisBot{
     //Return the input as an double array of the contour, highest point, and next_piece
     public double[] getInput(TetrisBoard board, TetrisPiece next_piece) {
         double[] input = new double[inputNodes];
-        double[] cont = contour(board, true);   
-        for (int i = 0; i < cont.length; i++) {
-            input[i] = cont[i];
+        for (int r = 0; r < 4; r++) {
+            for (int c=0;c<4;c++) {
+                if (board.board[r][c] != 0) {
+                    input[c + r * 4] = 1;
+                }
+            }
         }
+        //double[] cont = contour(board, true);   
+/*        for (int i = 0; i < cont.length; i++) {
+            input[i] = cont[i];
+        }*/
         //DOES THE CONTOUR CHANGE???
         board.eliminateRows();
-        input[inputNodes-2] = findHighest(contour(board, false));
-        input[inputNodes-1] = TetrisPiece.whatPiece(next_piece);
+        //input[inputNodes-2] = findHighest(contour(board, false));
+        int piece = TetrisPiece.whatPiece(next_piece);
+        input[16 + piece] = 1;
+        if (piece == -1) {
+            System.out.println("IM MAD");
+
+        }
         return input;
     }
     
@@ -167,7 +180,8 @@ public class NNBot extends TetrisBot{
         TetrisBoard currentBoard = deepCopy(board);
         currentBoard.addPiece(bestMove);
         double[] input = getInput(currentBoard, next_piece);
-        myNN.timeStep(input, getReward(currentBoard));
+//        System.out.println(Arrays.toString(input));
+        myNN.timeStep(input, getReward(currentBoard, next_piece));
     }
 
     public static  ArrayList<TetrisMove> getLegalMoves(TetrisBoard board, TetrisPiece current_piece){
@@ -203,10 +217,21 @@ public class NNBot extends TetrisBot{
     }
 */
     //TODO: TEST THIS, The reward is 100 for each line completed, perhaps just give a reward for completing any lines???
-    public double getReward(TetrisBoard board){
-        board.eliminateRows();
-        double highest = findHighest(contour(board, false));
-        return (1.0-(highest/(double)board.height));
+    public double getReward(TetrisBoard board, TetrisPiece current_piece){
+        //board.eliminateRows();
+        double reward = 0;
+        //double highest = findHighest(contour(board, false));
+       /* for (int r = 0; r < board.height; r++) {
+            if (board.checkEliminate(r) == true) {
+                reward += .25;
+            }
+        }*/
+        if (reward == 0 && getLegalMoves(board, current_piece).size()==0) {
+            return -1;
+        }
+        
+        return reward;
+        //return (1.0-(highest/(double)board.height));
         //return -(highest/(double)board.height);
     }
 }
