@@ -4,13 +4,14 @@ import java.util.ArrayList;
 public class NNBot extends TetrisBot{
     TDNetwork myNN;
     final double GAMMA = .5;
-    final double LEARNING_RATE = .7;
-    double ETA = .5;
+    final double ALPHA = .08333;
+    final double BETA = .33333;
+    double ETA = 0;
 
     public NNBot(){
         //EXPERIMENT ON THESE!
         System.out.println("INITIALIZING NEURAL NETWORK BAD!");
-        myNN = new TDNetwork(12, 3, 1, 1, LEARNING_RATE, LEARNING_RATE, .9, .5);
+        myNN = new TDNetwork(12, 3, 1, 1, ALPHA, BETA, .9, .5);
     }
 
     //Returns an integer array 
@@ -82,13 +83,13 @@ public class NNBot extends TetrisBot{
     public static void main(String[] args) {
         NNBot bot = new NNBot();
         TetrisBoard board = new TetrisBoard(10, 20, false);
-        TetrisPiece piece = TetrisPiece.buildLinePiece();
-        piece = piece.rotatePiece(1);
+        TetrisPiece piece = TetrisPiece.buildLeftLPiece();
+        //piece = piece.rotatePiece(1);
         //System.out.println(getLegalMoves(board, piece).size());
 
-        TetrisPiece piece2 = TetrisPiece.buildZPiece();
+        TetrisPiece piece2 = TetrisPiece.buildLinePiece();
         //System.out.println(getLegalMoves(board, piece2).size());
-
+	System.out.println("HELLO!: " + TetrisPiece.whatPiece(piece));
         TetrisMove move = new TetrisMove(piece, 0);
         TetrisMove move2 = new TetrisMove(piece2, 7);
         board.addPiece(move);
