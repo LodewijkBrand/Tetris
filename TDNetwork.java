@@ -1,3 +1,6 @@
+/*
+ * The pseudo code and concepts for this neural network came from: http://webdocs.cs.ualberta.ca/~sutton/td-backprop-pseudo-code.text
+*/
 import java.lang.Math;
 import java.util.Arrays;
 
@@ -70,6 +73,7 @@ public class TDNetwork {
         int k;
         double qValue = 0.0;
         r = _reward;
+        //System.out.println(Arrays.toString(features));
         for (int i = 0; i < features.length; i++){
             x[i] = features[i];
         }
@@ -164,9 +168,11 @@ public class TDNetwork {
         // For each output layer node
         for (k = 0; k < m; k++) {
             //For each hidden layer node
+            //System.out.println("PRINTING WEIGHT CHANGE");
             for (j = 0; j <= num_hidden; j++) {
                 //Update the weight as BETA * error at ouput * output trace for hidden node j and output node k
                 w[j][k] += BETA * error[k] * ew[j][k];
+                //System.out.println(BETA * error[k] * ew[j][k]);
                 //System.out.println(error[k]);
                 //For each input node
                 for (i = 0; i <= n; i++) {

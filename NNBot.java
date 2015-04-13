@@ -7,11 +7,12 @@ public class NNBot extends TetrisBot{
     final double ALPHA = .08333;
     final double BETA = .33333;
     double ETA = 0;
+    int inputNodes = 7;
 
     public NNBot(){
         //EXPERIMENT ON THESE!
         System.out.println("INITIALIZING NEURAL NETWORK BAD!");
-        myNN = new TDNetwork(12, 3, 1, 1, ALPHA, BETA, .9, .5);
+        myNN = new TDNetwork(inputNodes, 3, 1, 1, ALPHA, BETA, .9, .5);
     }
 
     //Returns an integer array 
@@ -89,7 +90,7 @@ public class NNBot extends TetrisBot{
 
         TetrisPiece piece2 = TetrisPiece.buildLinePiece();
         //System.out.println(getLegalMoves(board, piece2).size());
-	System.out.println("HELLO!: " + TetrisPiece.whatPiece(piece));
+	//System.out.println("HELLO!: " + TetrisPiece.whatPiece(piece));
         TetrisMove move = new TetrisMove(piece, 0);
         TetrisMove move2 = new TetrisMove(piece2, 7);
         board.addPiece(move);
@@ -98,9 +99,9 @@ public class NNBot extends TetrisBot{
         System.out.println(board);
         System.out.println(Arrays.toString(bot.contour(board, false)));
         System.out.println(findHighest(bot.contour(board, false)));
-        System.out.println(bot.getReward(board));
+        //System.out.println(bot.getReward(board));
         double[] input = new double[12];
-        input = bot.getInput(board, piece);
+        //input = bot.getInput(board, piece);
         System.out.println(Arrays.toString(input));
     }
 
@@ -112,6 +113,7 @@ public class NNBot extends TetrisBot{
         double best = Double.MIN_VALUE;
         TetrisMove bestMove = new TetrisMove(current_piece, 0);
         double[] input;
+        //System.out.println(board);
         if (Math.random() > ETA) {
             for(TetrisMove move : moves){
                 currentBoard = deepCopy(board);
@@ -146,15 +148,15 @@ public class NNBot extends TetrisBot{
     
     //Return the input as an double array of the contour, highest point, and next_piece
     public double[] getInput(TetrisBoard board, TetrisPiece next_piece) {
-        double[] input = new double[12];
+        double[] input = new double[inputNodes];
         double[] cont = contour(board, true);   
         for (int i = 0; i < cont.length; i++) {
             input[i] = cont[i];
         }
         //DOES THE CONTOUR CHANGE???
         board.eliminateRows();
-        input[10] = findHighest(contour(board, false));
-        input[11] = TetrisPiece.whatPiece(next_piece);
+        input[inputNodes-2] = findHighest(contour(board, false));
+        input[inputNodes-1] = TetrisPiece.whatPiece(next_piece);
         return input;
     }
     
@@ -202,5 +204,6 @@ public class NNBot extends TetrisBot{
         board.eliminateRows();
         double highest = findHighest(contour(board, false));
         return (1.0-(highest/(double)board.height));
+        //return -(highest/(double)board.height);
     }
 }
