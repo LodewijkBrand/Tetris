@@ -152,8 +152,8 @@ public class NNBot extends TetrisBot{
         }
         //DOES THE CONTOUR CHANGE???
         board.eliminateRows();
-        input[11] = findHighest(contour(board, false));
-        input[12] = TetrisPiece.whatPiece(next_piece);
+        input[10] = findHighest(contour(board, false));
+        input[11] = TetrisPiece.whatPiece(next_piece);
         return input;
     }
     
