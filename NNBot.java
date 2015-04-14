@@ -10,13 +10,21 @@ public class NNBot extends TetrisBot{
     final double BETA = .33333;
     final double BIAS = 1;
     double ETA = 0.1;
+    //Should always be width of board + 7
+    int pieceNodes = 7;
     int inputNodes = 23;
+    int hiddenNodes = 4;
+    int outputNodes = 1;
 
     public NNBot(){
-        //EXPERIMENT ON THESE!
         System.out.println("INITIALIZING NEURAL NETWORK BAD!");
         //int _n, int _num_hidden, int _m,  double _BIAS, double _ALPHA, double _BETA, double _GAMMA, double _LAMBDA
         myNN = new TDNetwork(inputNodes, 2, 1, BIAS, ALPHA, BETA, GAMMA, LAMBDA);
+    }
+    
+    public void setNetwork(int BOARD_WIDTH, int BOARD_HEIGHT) {
+        inputNodes = BOARD_WIDTH * BOARD_HEIGHT + pieceNodes;
+        myNN = new TDNetwork(inputNodes, hiddenNodes, outputNodes, BIAS, ALPHA, BETA, GAMMA, LAMBDA);
     }
 
     //Returns an integer array 
@@ -72,6 +80,11 @@ public class NNBot extends TetrisBot{
         return lowest;
     }
 
+    /**
+     * Returns a deepcopy of a Tetris board object
+     * @param board the original Tetris board
+     * @return the new Tetris board object
+     */
     //Return a deepcopy of a TetrisBoard object
     public static TetrisBoard deepCopy(TetrisBoard tBoard) {
         int[][] original = tBoard.board;
@@ -150,32 +163,40 @@ public class NNBot extends TetrisBot{
         }
     }
     
+    /**
+     * Returns the input to the neural netowork as a double array with
+     * each position of the board as either a 0 (not filled) or a 1 (filled)
+     * and 1 of 7 inputs as a 1 representing the next piece 
+     * @param board a copy of the Tetris board with a piece placed on it
+     * @param next_piece the next piece that will be placed on the board
+     * @return the input double array for the neural network
+     */
     //Return the input as an double array of the contour, highest point, and next_piece
     public double[] getInput(TetrisBoard board, TetrisPiece next_piece) {
         double[] input = new double[inputNodes];
-        for (int r = 0; r < 4; r++) {
-            for (int c=0;c<4;c++) {
+        for (int r = 0; r < board.width; r++) {
+            for (int c=0;c<board.width;c++) {
                 if (board.board[r][c] != 0) {
-                    input[c + r * 4] = 1;
+                    input[c + r * board.width] = 1;
                 }
             }
         }
-        //double[] cont = contour(board, true);   
-/*        for (int i = 0; i < cont.length; i++) {
-            input[i] = cont[i];
-        }*/
         //DOES THE CONTOUR CHANGE???
         board.eliminateRows();
-        //input[inputNodes-2] = findHighest(contour(board, false));
         int piece = TetrisPiece.whatPiece(next_piece);
-        input[16 + piece] = 1;
+        input[inputNodes - 7 + piece] = 1;
         if (piece == -1) {
             System.out.println("IM MAD");
-
         }
         return input;
     }
     
+    /**
+     * Feeds the current board through the network and 
+     * runs the backpropagation algorithm for the network
+     * @param board the original Tetris board
+     * @param bestMove the bestMove that will be placed on the board
+     */
     public void learn(TetrisBoard board, TetrisMove bestMove, TetrisPiece next_piece) {
         TetrisBoard currentBoard = deepCopy(board);
         currentBoard.addPiece(bestMove);
@@ -217,7 +238,6 @@ public class NNBot extends TetrisBot{
         if (getLegalMoves(board, current_piece).size()==0) {
             return -1;
         }
-        
         return reward;
     }
 }

@@ -435,13 +435,15 @@ class TetrisBoard {
             result += "\n";
         }
         return result;
-    }
-    
-    
+    }  
 }
 
 
 class TetrisBot {
+    //Override this method for NNBot
+    public void setNetwork(int board_width, int board_height) {
+        
+    }
     
     // override this method
     public TetrisMove chooseMove(TetrisBoard board, TetrisPiece current_piece, TetrisPiece next_piece) {
@@ -526,7 +528,10 @@ class TetrisGame {
         //TetrisBot player = (TetrisBot)con1.newInstance();
         
         TetrisBot player = (TetrisBot) Class.forName(botClassName).newInstance();
-        
+        if (botClassName.equals("NNBot")) {
+            System.out.println("Setting up Neural Network!");
+            player.setNetwork(BOARD_WIDTH, BOARD_HEIGHT);
+        }
         int totalScore = 0;
         int myScore = 0;
         for (int i = 0; i < NUMBER_GAMES; i++) {
