@@ -65,12 +65,12 @@ public class TDNetwork {
         y = new double[m];
 
         w = new double[num_hidden+1][m];
-	mw = new double[num_hidden+1][m];
-	pdw = new double[num_hidden+1][m];
+        mw = new double[num_hidden+1][m];
+        pdw = new double[num_hidden+1][m];
 
         v = new double[n+1][num_hidden+1];
-	mv = new double[n+1][num_hidden+1];
-	pdv = new double[n+1][num_hidden+1];
+        mv = new double[n+1][num_hidden+1];
+        pdv = new double[n+1][num_hidden+1];
 
         old_y = new double[m];
         ev = new double[n+1][num_hidden+1][m];
@@ -106,6 +106,16 @@ public class TDNetwork {
      * @param _reward The current reward
      * @return y The output vector
      */
+    int count = 0;
+    double errorSum = 0;
+    public void printAvg() {
+        if (count % 100000 == 0) {
+            System.out.println(errorSum/count);
+            errorSum = 0;
+            count = 0;
+        }
+    }
+    
     public double[] timeStep(double[] features, double _reward){
         r = _reward;
 
@@ -117,6 +127,7 @@ public class TDNetwork {
 	/* For each output node calculate the error */
         for (int k = 0; k < m; k++) {
             error[k] = r + GAMMA * y[k] - old_y[k]; /* form errors */
+            errorSum += Math.abs(error[k]);
         }
         
         tdLearn(); /* backward pass - learning */
@@ -125,6 +136,8 @@ public class TDNetwork {
             old_y[k] = y[k]; /* for use in next cycle's TD errors */
         }
         updateElig(); /* update eligibility traces */
+        count++;
+        printAvg();
         return y;
     }
 
@@ -141,16 +154,16 @@ public class TDNetwork {
             for (k=0;k<m;k++) {
                 //Make the random number between -1 and 1 for all weights of the hidden layers
                 w[j][k]=(Math.random() * 2 - 1);
-		mw[j][k]=1.0;  //Default momentum just 1.0
-		pdw[j][k]=0.0; //No change in w yet
+                mw[j][k]=1.0;  //Default momentum just 1.0
+                pdw[j][k]=0.0; //No change in w yet
                 ew[j][k]=0.0;
                 old_y[k]=0.0;
             }
             for (i=0; i<=n; i++) {
                 //Make the random number between -1 and 1 for all weights of the hidden layers
                 v[i][j]=(Math.random() * 2 - 1);
-		mv[i][j]=1.0;  //Default momentum is 1.0;
-		pdv[i][j]=0.0; //No change in v yet
+                mv[i][j]=1.0;  //Default momentum is 1.0;
+                pdv[i][j]=0.0; //No change in v yet
                 for (k=0;k<m;k++) {
                     //For each input node, for each hidden node, for each output node, fill the ev array with 0.0
                     ev[i][j][k]=0.0;
@@ -203,12 +216,12 @@ public class TDNetwork {
             //For each hidden layer node
             for (j = 0; j <= num_hidden; j++) {
                 //Update the weight as BETA * error at ouput * output trace for hidden node j and output node k
-		double dw = BETA * error[k] * ew[j][k];
+                double dw = BETA * error[k] * ew[j][k];
                 w[j][k] += applyMomentum(mw, dw, pdw, j, k);
                 //For each input node
                 for (i = 0; i <= n; i++) {
                     //Update the weight as ALPHA * error at input * hidden trace for input node i, hidden node j, and output node k
-		    double dv = ALPHA * error[k] * ev[i][j][k];
+                    double dv = ALPHA * error[k] * ev[i][j][k];
                     v[i][j] += applyMomentum(mv, dv, pdv, i, j);
                 }
             }
@@ -223,16 +236,17 @@ public class TDNetwork {
      * @param i, j Current indices
      * @return The applied momentum
      */
-    public double applyMomentum(double[][] m, double dw, double[][] pdw, int i, int j){
-	if ((dw > 0 && pdw[i][j] > 0) | (dw < 0 && pdw[i][j] < 0)){
-	    m[i][j] *= 1.05; //Aggressive cat!
-	    //System.out.println("APPLYING MOMENTUM!!!! \ndw: " + dw + "\npdw: " + pdw[i][j]);
-	} else{
-	    m[i][j] *= .95; //Slow down!
-	    //System.out.println("SLOW DOWN CAT!!!!! \ndw: " + dw + "\npdw: " + pdw[i][j]);
-	}
-	pdw[i][j] = dw;
-	return dw * m[i][j]; //Apply momentum
+    public double applyMomentum(double[][] m, double delta, double[][] pd, int i, int j){
+        if ((delta > 0 && pd[i][j] > 0) | (delta < 0 && pd[i][j] < 0)){
+            m[i][j] *= 1.05; //Aggressive cat!
+            //System.out.println("APPLYING MOMENTUM!!!! \ndw: " + delta + "\npdw: " + pd[i][j]);
+        } else{
+            m[i][j] *= .95; //Slow down!
+            //System.out.println("SLOW DOWN CAT!!!!! \ndw: " + delta + "\npdw: " + pd[i][j]);
+        }
+        pd[i][j] = delta;
+        return delta * m[i][j]; //Apply momentum
+        //return delta;
     }
 
     /**

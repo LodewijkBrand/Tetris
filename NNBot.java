@@ -10,7 +10,6 @@ public class NNBot extends TetrisBot{
     final double BETA = .33333;
     final double BIAS = 1;
     double ETA = 0.1;
-    //Should always be width of board + 7
     int pieceNodes = 7;
     int inputNodes = 23;
     int hiddenNodes = 4;
