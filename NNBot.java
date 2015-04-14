@@ -180,10 +180,15 @@ public class NNBot extends TetrisBot{
         TetrisBoard currentBoard = deepCopy(board);
         currentBoard.addPiece(bestMove);
         double[] input = getInput(currentBoard, next_piece);
-//        System.out.println(Arrays.toString(input));
         myNN.timeStep(input, getReward(currentBoard, next_piece));
     }
 
+    /**
+     * Gets all the legal moves given a board and a piece to place.
+     * @param board A deep copy of the current board
+     * @param current_piece The current piece we are trying to place
+     * @return legalMoves All the legal moves available
+     */
     public static  ArrayList<TetrisMove> getLegalMoves(TetrisBoard board, TetrisPiece current_piece){
         ArrayList<TetrisMove> legalMoves = new ArrayList<TetrisMove>();
         for (int i = 0; i < 4; i++){
@@ -199,39 +204,20 @@ public class NNBot extends TetrisBot{
         return legalMoves;
     }
 
-    //TODO: TEST THIS, The reward is 100 for each line completed, perhaps just give a reward for completing any lines???
-/*    public double getReward(TetrisBoard board, TetrisPiece current_piece){
-        double reward = 0.0;
-
-        for (int r = 0; r < board.height; r++) {
-            if (board.checkEliminate(r) == true) {
-                reward += .25;
-            }
-        }
-
-        //If there are no legal moves left (you've lost) and the reward is zero (you are not about to clear any rows)
-        if (reward == 0 && getLegalMoves(board, current_piece).size()==0) {
-            return -1;
-        }
-        return reward;
-    }
-*/
-    //TODO: TEST THIS, The reward is 100 for each line completed, perhaps just give a reward for completing any lines???
+    /**
+     * Only returns a negative reward if the game is lost. We give no other information
+     * about the game. Not even lines cleared!
+     * @param board A deep copy of the current board
+     * @param current_piece The next piece that could be placed
+     * @return reward Are we going to lose or not?
+     */
     public double getReward(TetrisBoard board, TetrisPiece current_piece){
-        //board.eliminateRows();
         double reward = 0;
-        //double highest = findHighest(contour(board, false));
-       /* for (int r = 0; r < board.height; r++) {
-            if (board.checkEliminate(r) == true) {
-                reward += .25;
-            }
-        }*/
-        if (reward == 0 && getLegalMoves(board, current_piece).size()==0) {
+
+        if (getLegalMoves(board, current_piece).size()==0) {
             return -1;
         }
         
         return reward;
-        //return (1.0-(highest/(double)board.height));
-        //return -(highest/(double)board.height);
     }
 }
