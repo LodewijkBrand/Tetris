@@ -237,11 +237,11 @@ public class TDNetwork {
      * @return The applied momentum
      */
     public double applyMomentum(double[][] m, double delta, double[][] pd, int i, int j){
-        if ((delta > 0 && pd[i][j] > 0) | (delta < 0 && pd[i][j] < 0)){
+        if ((delta > 0 && pd[i][j] > 0) || (delta < 0 && pd[i][j] < 0)){
             m[i][j] *= 1.05; //Aggressive cat!
             //System.out.println("APPLYING MOMENTUM!!!! \ndw: " + delta + "\npdw: " + pd[i][j]);
         } else{
-            m[i][j] *= .95; //Slow down!
+            m[i][j] = 1; //Slow down!
             //System.out.println("SLOW DOWN CAT!!!!! \ndw: " + delta + "\npdw: " + pd[i][j]);
         }
         pd[i][j] = delta;

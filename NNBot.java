@@ -6,13 +6,13 @@ public class NNBot extends TetrisBot{
     TDNetwork myNN;
     final double GAMMA = .9;
     final double LAMBDA = .5;
-    final double ALPHA = .08333;
-    final double BETA = .33333;
+    double ALPHA = .08333;
+    double BETA = .33333;
     final double BIAS = 1;
     double ETA = 0.1;
     int pieceNodes = 7;
     int inputNodes = 23;
-    int hiddenNodes = 4;
+    int hiddenNodes = 2;
     int outputNodes = 1;
 
     public NNBot(){
@@ -23,60 +23,10 @@ public class NNBot extends TetrisBot{
     
     public void setNetwork(int BOARD_WIDTH, int BOARD_HEIGHT) {
         inputNodes = BOARD_WIDTH * BOARD_HEIGHT + pieceNodes;
+        hiddenNodes = (int)((2.0/3.0)* inputNodes);
+        ALPHA = 1.0/inputNodes;
+        BETA = 1.0/hiddenNodes;
         myNN = new TDNetwork(inputNodes, hiddenNodes, outputNodes, BIAS, ALPHA, BETA, GAMMA, LAMBDA);
-    }
-
-    //Returns an integer array 
-    public double[] contour(TetrisBoard tBoard, Boolean format){
-        int[][] board = tBoard.board;
-        double[] contour = new double[tBoard.width];
-        //Find the heights of all of the columns
-        //note that a Tetrisboard.board is stored as [row][column]
-        for (int c = 0; c<tBoard.width; c++){
-            for(int r = 0; r<tBoard.height; r++){
-                if (board[r][c] != 0) {
-                    contour[c] = (double)(tBoard.height-r);
-                    break;
-                }
-                else if (r == tBoard.height-1 && board[r][c] == 0) {
-                    contour[c] = (0.0);
-                }
-            }
-        }
-        if (format) {
-            format(contour);
-        }
-        return contour;
-    }
-
-    //Finds the lowest value in the array and subtracts that value from all other value in the array and returns it
-    public static void format(double[] contour) {
-        double lowest = findLowest(contour);
-        for (int i = 0; i < contour.length; i++) {
-            contour[i] = (contour[i]-lowest);
-        }
-    }
-    
-    //Find the highest number in an array and return it
-    public static double findHighest(double[] contour) {
-        double highest = contour[0];
-        for (int i = 1; i < contour.length; i++) {
-            if (contour[i] > highest) {
-                highest = contour[i];
-            }
-        }
-        return highest;
-    }
-
-    //Find the lowest number in an array and return it
-    public static double findLowest(double[] contour) {
-        double lowest = contour[0];
-        for (int i = 1; i < contour.length; i++) {
-            if (contour[i] < lowest) {
-                lowest = contour[i];
-            }
-        }
-        return lowest;
     }
 
     /**
@@ -97,30 +47,14 @@ public class NNBot extends TetrisBot{
         return newTBoard;
     }
 
-    public static void main(String[] args) {
-        NNBot bot = new NNBot();
-        TetrisBoard board = new TetrisBoard(10, 20, false);
-        TetrisPiece piece = TetrisPiece.buildLeftLPiece();
-        //piece = piece.rotatePiece(1);
-        //System.out.println(getLegalMoves(board, piece).size());
-
-        TetrisPiece piece2 = TetrisPiece.buildLinePiece();
-        //System.out.println(getLegalMoves(board, piece2).size());
-	//System.out.println("HELLO!: " + TetrisPiece.whatPiece(piece));
-        TetrisMove move = new TetrisMove(piece, 0);
-        TetrisMove move2 = new TetrisMove(piece2, 7);
-        board.addPiece(move);
-        board.addPiece(move2);
-        board.addPiece(move2);
-        System.out.println(board);
-        System.out.println(Arrays.toString(bot.contour(board, false)));
-        System.out.println(findHighest(bot.contour(board, false)));
-        //System.out.println(bot.getReward(board));
-        double[] input = new double[12];
-        //input = bot.getInput(board, piece);
-        System.out.println(Arrays.toString(input));
-    }
-
+    /**
+     * Returns a Tetris move to be made in the Tetris game. This program
+     * selects a random move to train the neural network on with percent
+     * ETA (where ETA decreases over time).
+     * @param board the current board state
+     * @param current_piece the current piece to be played on the board
+     * @return next_piece the next piece to be played on the board after current piece
+     */
     public TetrisMove chooseMove(TetrisBoard board, TetrisPiece current_piece, TetrisPiece next_piece){
         TetrisBoard currentBoard;
         ArrayList<TetrisMove> moves = getLegalMoves(board, current_piece); 
@@ -148,7 +82,7 @@ public class NNBot extends TetrisBot{
             return bestMove;
         }
         else {
-            ETA -= ETA * .999999;
+            ETA = ETA * .999999;
             //System.out.println(ETA);
             if (moves.size()>0) {
                 bestMove = moves.get((int)(Math.random() * (moves.size()-1)));
@@ -170,11 +104,10 @@ public class NNBot extends TetrisBot{
      * @param next_piece the next piece that will be placed on the board
      * @return the input double array for the neural network
      */
-    //Return the input as an double array of the contour, highest point, and next_piece
     public double[] getInput(TetrisBoard board, TetrisPiece next_piece) {
         double[] input = new double[inputNodes];
-        for (int r = 0; r < board.width; r++) {
-            for (int c=0;c<board.width;c++) {
+        for (int r = 0; r < board.height; r++) {
+            for (int c = 0; c < board.width; c++) {
                 if (board.board[r][c] != 0) {
                     input[c + r * board.width] = 1;
                 }
@@ -183,7 +116,7 @@ public class NNBot extends TetrisBot{
         //DOES THE CONTOUR CHANGE???
         board.eliminateRows();
         int piece = TetrisPiece.whatPiece(next_piece);
-        input[inputNodes - 7 + piece] = 1;
+        input[inputNodes - pieceNodes + piece] = 1;
         if (piece == -1) {
             System.out.println("IM MAD");
         }
